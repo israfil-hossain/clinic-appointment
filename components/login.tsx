@@ -1,33 +1,57 @@
 // pages/signin.js
-'use client';
+"use client";
 import { Formik, Form, Field, ErrorMessage } from "formik";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+
 import * as Yup from "yup";
 
 const signInSchema = Yup.object().shape({
-  email: Yup.string().email("Invalid email address").required("Email is required"),
-  password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
+  email: Yup.string()
+    .email("Invalid email address")
+    .required("Email is required"),
+  password: Yup.string()
+    .min(6, "Password must be at least 6 characters")
+    .required("Password is required"),
 });
 
 const SignIn = () => {
-  const handleSubmit = (values:any) => {
+    const router = useRouter()
+
+  const handleSubmit = (values: any) => {
     console.log("Form values:", values);
     // Handle sign-in logic here
+    router.push('/dashboard')
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
+    <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
+      <div className="flex justify-center items-center pb-4">
+        <Image
+          src="/mos2.jpg"
+          alt="logo"
+          width={80}
+          height={80}
+          className="rounded-lg "
+        />
+      </div>
       <div className="w-full max-w-md p-8 space-y-4 bg-white shadow-md rounded-md">
-        <h2 className="text-2xl font-bold text-center text-gray-800">Sign In</h2>
-        
+        <h2 className="text-2xl font-bold text-center text-gray-800">
+          Sign In
+        </h2>
+
         <Formik
           initialValues={{ email: "", password: "" }}
           onSubmit={handleSubmit}
           validationSchema={signInSchema}
         >
-          {({ isSubmitting }) => (
+          {({ isSubmitting }: { isSubmitting: any }) => (
             <Form className="space-y-6">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Email
                 </label>
                 <Field
@@ -44,7 +68,10 @@ const SignIn = () => {
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Password
                 </label>
                 <Field
