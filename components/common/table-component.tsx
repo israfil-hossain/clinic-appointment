@@ -21,7 +21,7 @@ interface TableComponentProps {
 const TableComponent: React.FC<TableComponentProps> = ({ appointments, onView, onEdit, onDelete }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
 
   const totalPages = Math.ceil(appointments.length / itemsPerPage);
 
@@ -53,71 +53,81 @@ const TableComponent: React.FC<TableComponentProps> = ({ appointments, onView, o
   const paginatedAppointments = appointments.slice(startIndex, startIndex + itemsPerPage);
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full bg-white border border-gray-300">
-        <thead>
-          <tr className="bg-gray-200">
-            <th className="py-2 px-4 border-b border-gray-300">
-              <input type="checkbox" onChange={handleSelectAll} />
-            </th>
-            <th className="py-2 px-4 border-b border-gray-300 text-left text-sm font-medium text-gray-600">Time</th>
-            <th className="py-2 px-4 border-b border-gray-300 text-left text-sm font-medium text-gray-600">Name</th>
-            <th className="py-2 px-4 border-b border-gray-300 text-left text-sm font-medium text-gray-600">Surname</th>
-            <th className="py-2 px-4 border-b border-gray-300 text-left text-sm font-medium text-gray-600">Type</th>
-            <th className="py-2 px-4 border-b border-gray-300 text-left text-sm font-medium text-gray-600">Phone</th>
-            <th className="py-2 px-4 border-b border-gray-300 text-left text-sm font-medium text-gray-600">Actions</th>
+    <div className="overflow-x-auto lg:px-10 px-5  ">
+    <table className="w-full text-sm ">
+      <thead className=''>
+        <tr className="bg-white ">
+          <th className="border border-gray-200 px-4 py-2 text-center font-medium">
+            <input type="checkbox" onChange={handleSelectAll} />
+          </th>
+          <th className="border border-gray-200 px-4 py-2 text-left font-medium">Timp prezent</th>
+          <th className="border border-gray-200 px-4 py-2 text-left font-medium">Nume</th>
+          <th className="border border-gray-200 px-4 py-2 text-left font-medium">Prenume</th>
+          <th className="border border-gray-200 px-4 py-2 text-left font-medium">Tip Ecografie</th>
+          <th className="border border-gray-200 px-4 py-2 text-left font-medium">Telefon</th>
+          <th className="border border-gray-200 px-4 py-2 text-left font-medium">Actions</th>
+        </tr>
+      </thead>
+      <tbody className='rounded-b-2xl'>
+        {paginatedAppointments.map((appointment, index) => (
+          <tr
+            key={index}
+            className={`${
+              appointment.name !== "-"
+                ? index % 2 === 0
+                  ? "bg-red-500"
+                  : "bg-white"
+                : "bg-white"
+            } transition-colors hover:bg-gray-50`}
+          >
+            <td className="border border-gray-200 px-4 py-2 bg-white text-center ">
+              <input
+                type="checkbox"
+                checked={selectedRows.includes(index)}
+                onChange={() => handleCheckboxChange(index)}
+              />
+            </td>
+            <td className="border border-gray-200 px-4 py-2 text-gray-700">{appointment.time}</td>
+            <td className="border border-gray-200 px-4 py-2 text-gray-700">{appointment.name}</td>
+            <td className="border border-gray-200 px-4 py-2 text-gray-700">{appointment.surname}</td>
+            <td className="border border-gray-200 px-4 py-2 text-gray-700">{appointment.type}</td>
+            <td className="border border-gray-200 px-4 py-2 text-gray-700">{appointment.phone}</td>
+            <td className="border border-gray-200 px-4 py-2 bg-white flex space-x-2 justify-center">
+              <button onClick={() => onView(appointment)} className="text-blue-500">
+                <Eye size={20} />
+              </button>
+              <button onClick={() => onEdit(appointment)} className="text-yellow-500">
+                <Edit size={20} />
+              </button>
+              <button onClick={() => onDelete(appointment)} className="text-red-500">
+                <Trash size={20} />
+              </button>
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          {paginatedAppointments.map((appointment, index) => (
-            <tr key={index} className="border-b border-gray-300">
-              <td className="py-2 px-4 text-sm text-gray-700">
-                <input
-                  type="checkbox"
-                  checked={selectedRows.includes(index)}
-                  onChange={() => handleCheckboxChange(index)}
-                />
-              </td>
-              <td className="py-2 px-4 text-sm text-gray-700">{appointment.time}</td>
-              <td className="py-2 px-4 text-sm text-gray-700">{appointment.name}</td>
-              <td className="py-2 px-4 text-sm text-gray-700">{appointment.surname}</td>
-              <td className="py-2 px-4 text-sm text-gray-700">{appointment.type}</td>
-              <td className="py-2 px-4 text-sm text-gray-700">{appointment.phone}</td>
-              <td className="py-2 px-4 text-sm text-gray-700 flex space-x-2">
-                <button onClick={() => onView(appointment)} className="text-blue-500">
-                  <Eye size={16} />
-                </button>
-                <button onClick={() => onEdit(appointment)} className="text-yellow-500">
-                  <Edit size={16} />
-                </button>
-                <button onClick={() => onDelete(appointment)} className="text-red-500">
-                  <Trash size={16} />
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div className="flex justify-between items-center mt-4">
-        <button
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className="px-4 py-2 bg-gray-200 text-gray-700 rounded disabled:opacity-50"
-        >
-          Previous
-        </button>
-        <span className="text-sm text-gray-700">
-          Page {currentPage} of {totalPages}
-        </span>
-        <button
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className="px-4 py-2 bg-gray-200 text-gray-700 rounded disabled:opacity-50"
-        >
-          Next
-        </button>
-      </div>
+        ))}
+      </tbody>
+    </table>
+    <div className="flex justify-between items-center mt-4">
+      <button
+        onClick={() => handlePageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className="px-4 py-2 bg-gray-200 text-gray-700 rounded disabled:opacity-50"
+      >
+        Previous
+      </button>
+      <span className="text-sm text-gray-700">
+        Page {currentPage} of {totalPages}
+      </span>
+      <button
+        onClick={() => handlePageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className="px-4 py-2 bg-gray-200 text-gray-700 rounded disabled:opacity-50"
+      >
+        Next
+      </button>
     </div>
+  </div>
+  
   );
 };
 
