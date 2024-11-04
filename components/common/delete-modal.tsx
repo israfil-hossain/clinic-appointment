@@ -17,12 +17,12 @@ import { Button } from "../ui/button";
 import { useState } from "react";
 
 const DeleteModal = ({
-  endpoint,
+  // endpoint,
   open,
   setOpen,
   msg = "Delete Successfully !",
   dataRefetch,
-  id,
+  // id,
 }: {
   endpoint: string;
   open: any;
