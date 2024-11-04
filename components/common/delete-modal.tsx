@@ -27,7 +27,7 @@ const DeleteModal = ({
   endpoint: string;
   open: any;
   setOpen: any;
-  msg: string;
+  msg?: string;
   dataRefetch: any;
   id: string | number;
 }) => {

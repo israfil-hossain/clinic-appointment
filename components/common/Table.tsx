@@ -1,7 +1,8 @@
-'use client'; 
+'use client';
 
 import * as React from "react";
 import {
+  ColumnDef,
   flexRender,
   getCoreRowModel,
   getFacetedRowModel,
@@ -10,6 +11,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
+  Table as ReactTableInstance,
 } from "@tanstack/react-table";
 
 import {
@@ -25,29 +27,39 @@ import { DataTablePagination } from "./data-table-pagination";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 
-export function DataTable({
+interface ActionButton<TData> {
+  label: string;
+  icon?: React.ElementType;
+  iconClassName?: string;
+  className?: string;
+  onClick: (table: ReactTableInstance<TData>) => void;
+}
+
+interface DataTableProps<TData, TValue> {
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+  DataTableToolbar?: (props: { table: ReactTableInstance<TData> }) => JSX.Element;
+  actionButtons?: ActionButton<TData>[];
+  isPaginate?: boolean;
+  pagination?: any; // Add specific type if pagination object structure is known
+  className?: string;
+  classNameHeader?: string;
+}
+
+export function DataTable<TData, TValue>({
   columns,
   data,
   DataTableToolbar,
-  actionButtons,
+  actionButtons = [],
   isPaginate = true,
   pagination,
   className,
   classNameHeader,
-}:{
-  columns:any, 
-  data:any, 
-  DataTableToolbar: any, 
-  actionButtons: any, 
-  isPaginate : boolean, 
-  pagination : any, 
-  className : any, 
-  classNameHeader: any
-}) {
-  const [rowSelection, setRowSelection] = React.useState({});
-  const [columnVisibility, setColumnVisibility] = React.useState({});
-  const [columnFilters, setColumnFilters] = React.useState([]);
-  const [sorting, setSorting] = React.useState([]);
+}: DataTableProps<TData, TValue>) {
+  const [rowSelection, setRowSelection] = React.useState<Record<string, boolean>>({});
+  const [columnVisibility, setColumnVisibility] = React.useState<Record<string, boolean>>({});
+  const [columnFilters, setColumnFilters] = React.useState<any[]>([]);
+  const [sorting, setSorting] = React.useState<any[]>([]);
 
   const table = useReactTable({
     data,
@@ -88,11 +100,11 @@ export function DataTable({
               className="translate-y-[2px] mr-4"
             />
 
-            {actionButtons.map((button:any, index:any) => (
+            {actionButtons.map((button, index) => (
               <button
                 key={index}
                 className={cn(
-                  "ml-2 font-semibold  flex justify-center items-center w-32 text-[15px] bg-white shadow-md hover:shadow-lg px-2 rounded-full  border ",
+                  "ml-2 font-semibold flex justify-center items-center w-32 text-[15px] bg-white shadow-md hover:shadow-lg px-2 rounded-full border",
                   button.className
                 )}
                 onClick={() => button?.onClick(table)}
@@ -110,24 +122,22 @@ export function DataTable({
           DataTableToolbar && <DataTableToolbar table={table} />
         )}
       </div>
-      <div className="">
+      <div>
         <Table>
           {Object.keys(rowSelection)?.length === 0 && (
             <TableHeader className={cn("", classNameHeader)}>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead key={header.id} colSpan={header.colSpan}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    );
-                  })}
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id} colSpan={header.colSpan}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  ))}
                 </TableRow>
               ))}
             </TableHeader>
@@ -153,7 +163,7 @@ export function DataTable({
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={columns?.length}
+                  colSpan={columns.length}
                   className="h-16 text-base text-center"
                 >
                   No results.

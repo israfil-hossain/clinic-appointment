@@ -1,13 +1,15 @@
-// import { z } from 'zod'
+// schemas/taskSchema.ts
+import * as Yup from 'yup';
 
-// // We're keeping a simple non-relational schema here.
-// // IRL, you will have a schema for your data models.
-// export const taskSchema = z.object({
-//   id: z.string(),
-//   title: z.string(),
-//   status: z.string(),
-//   label: z.string(),
-//   priority: z.string(),
-// })
+// Define the schema using Yup
+export const taskSchema = Yup.object({
+  _id: Yup.string().required('ID is required'),
+  time: Yup.string().required('Time is required'),
+  name: Yup.string().required('Name is required'),
+  lastname: Yup.string().required("Nume is required"),
+  type: Yup.string().required('Type is required'),
+  phone: Yup.string().required('Priority is required'),
+});
 
-// export type Task = z.infer<typeof taskSchema>
+// Define the Task Type using Yup’s TypeScript utility
+export type Task = Yup.InferType<typeof taskSchema>;
