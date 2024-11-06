@@ -18,35 +18,17 @@ interface TableComponentProps {
   onDelete: (appointment: Appointment) => void;
 }
 
-const TableComponent: React.FC<TableComponentProps> = ({ appointments, onView, onEdit, onDelete }) => {
+const UserTable: React.FC<TableComponentProps> = ({ appointments, onView, onEdit, onDelete }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedRows, setSelectedRows] = useState<number[]>([]);
   const itemsPerPage = 10;
 
   const totalPages = Math.ceil(appointments.length / itemsPerPage);
 
-  const handleCheckboxChange = (index: number) => {
-    setSelectedRows((prevSelectedRows) =>
-      prevSelectedRows.includes(index)
-        ? prevSelectedRows.filter((i) => i !== index)
-        : [...prevSelectedRows, index]
-    );
-  };
-
-  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.checked) {
-      const allIndexes = appointments
-        .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-        .map((_, index) => index);
-      setSelectedRows(allIndexes);
-    } else {
-      setSelectedRows([]);
-    }
-  };
+  
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
-    setSelectedRows([]);
+   
   };
 
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -58,7 +40,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ appointments, onView, o
       <thead className=''>
         <tr className="bg-white ">
           <th className="border border-gray-200 px-4 py-2 text-center font-medium">
-            <input type="checkbox" onChange={handleSelectAll} />
+            ID
           </th>
           <th className="border border-gray-200 px-4 py-2 text-left font-medium">Timp prezent</th>
           <th className="border border-gray-200 px-4 py-2 text-left font-medium">Nume</th>
@@ -81,19 +63,17 @@ const TableComponent: React.FC<TableComponentProps> = ({ appointments, onView, o
             } transition-colors hover:bg-gray-50`}
           >
             <td className="border border-gray-200 px-4 py-2 bg-white text-center ">
-              <input
-                type="checkbox"
-                checked={selectedRows.includes(index)}
-                onChange={() => handleCheckboxChange(index)}
-              />
+              {index}
             </td>
             <td className="border border-gray-200 px-4 py-2 text-gray-700">{appointment.time}</td>
             <td className="border border-gray-200 px-4 py-2 text-gray-700">{appointment.name}</td>
             <td className="border border-gray-200 px-4 py-2 text-gray-700">{appointment.surname}</td>
             <td className="border border-gray-200 px-4 py-2 text-gray-700">{appointment.type}</td>
             <td className="border border-gray-200 px-4 py-2 text-gray-700">{appointment.phone}</td>
-            <td className="border border-gray-200 px-4 py-2 bg-white flex space-x-2 justify-start">
-              
+            <td className="border border-gray-200 px-4 py-2 bg-white flex space-x-2 justify-center">
+              <button onClick={() => onView(appointment)} className="text-blue-500">
+                <Eye size={20} />
+              </button>
               <button onClick={() => onEdit(appointment)} className="text-yellow-500">
                 <Edit size={20} />
               </button>
@@ -129,4 +109,4 @@ const TableComponent: React.FC<TableComponentProps> = ({ appointments, onView, o
   );
 };
 
-export default TableComponent;
+export default UserTable;

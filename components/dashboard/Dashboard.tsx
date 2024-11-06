@@ -27,18 +27,7 @@ const Dashboard = () => {
   return (
     <div className="flex flex-col items-center justify-start h-screen bg-gray-200 py-5">
       <div className="w-full max-w-7xl p-5 space-y-4 bg-gray-100 rounded-md shadow-md py-5">
-        <div className="flex justify-start  items-center  w-full lg:px-10 px-5 mt-5 border-b pb-5">
-          <h2 className="font-medium lg:text-[18px] text-[12px] ">
-            Număr telefon apelant
-          </h2>
-          <div className="flex w-[70%] space-x-2 items-center ml-5">
-            <input type="text" className="border py-2 rounded-sm w-full" />
-            <SendHorizontal
-              size={18}
-              className="bg-blue-200 h-10 w-10 p-2 rounded-sm"
-            />
-          </div>
-        </div>
+        
         <CalendarGrid />
         <div className="w-full text-center text-[18px] font-semibold py-2 border-t pt-5">
           Oradea-Luni, 22 Aprille 2024
