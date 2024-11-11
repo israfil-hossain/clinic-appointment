@@ -3,11 +3,10 @@
 import { useState } from "react";
 import { Formik, Form, Field, FormikHelpers, FormikErrors } from "formik";
 import * as Yup from "yup";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MoreHorizontal, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -16,121 +15,209 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { departmentsData, locations } from "@/lib/department";
+import axios from "axios";
+import toast from "react-hot-toast";
+import utc from "dayjs/plugin/utc";
+import dayjs from "dayjs";
 
-// Define the shape of your form values
-interface AppointmentFormValues {
-  time: string;
-  name: string;
-  surname: string;
-  type: string;
-  phone: string;
-  description: string;
-  department: string;
-  doctor: string;
+dayjs.extend(utc);
+
+interface Appointment {
+  _id?: string;
   location: string;
+  date: any;
+  time: string;
+  patientName: string;
+  patientSurname: string;
+  doctorName: string;
+  testType: string;
+  phoneNumber: string;
+  isConfirmed: boolean;
+  notes: string;
 }
 
 // Validation schema using Yup
 const AppointmentSchema = Yup.object().shape({
   time: Yup.string().required("Time is required"),
-  name: Yup.string().required("Name is required"),
-  surname: Yup.string().required("Surname is required"),
-  type: Yup.string().required("Type is required"),
-  phone: Yup.string().required("Phone number is required"),
-  department: Yup.string().required("Department is required"),
-  doctor: Yup.string().required("Doctor is required"),
-  location: Yup.string().required("Location is required"),
+  patientName: Yup.string().required("Name is required"),
+  patientSurname: Yup.string().required("Surname is required"),
+  testType: Yup.string().required("Type is required"),
+  phoneNumber: Yup.string().required("Phone number is required"),
+  doctorName: Yup.string().required("Doctor is required"),
 });
 
 interface AppointmentAddEditProps {
   isModalOpen: boolean;
-  setIsModalOpen: (isOpen: boolean) => void;
-  data?: AppointmentFormValues; // Optional initial data
+  handleModal: () => void; 
+  date?: any;
+  location: string;
+  data?: Appointment | null;
+  fetchAppointments: () => void;
 }
 
 export default function AppointmentAddEdit({
   isModalOpen,
-  setIsModalOpen,
+  handleModal,
+  date,
+  location,
   data,
+  fetchAppointments,
 }: AppointmentAddEditProps) {
   const [selectedDepartment, setSelectedDepartment] = useState("");
 
-  const handleAddAppointment = (
-    values: AppointmentFormValues,
-    { resetForm }: FormikHelpers<AppointmentFormValues>
+  const appointmentDate = dayjs(date).startOf("day");
+  const formattedDate = appointmentDate.format("YYYY-MM-DD");
+
+  const handleAddOrUpdateAppointment = async (
+    values: any,
+    { resetForm }: { resetForm: any }
   ) => {
-    console.log("New appointment added:", values);
-    resetForm();
-    setIsModalOpen(false);
+    try {
+      if (data) {
+        await updateAppointment(data?._id, {
+          ...values,
+          date: formattedDate,
+        });
+      } else {
+        await createAppointment(values, formattedDate);
+      }
+      resetForm();
+      handleModal();
+      fetchAppointments();
+      toast.success(
+        data
+          ? "Appointment Updated Successfully!"
+          : "Appointment Created Successfully!"
+      );
+    } catch (error) {
+      console.error("Error handling appointment:", error);
+      toast.error("An error occurred while handling the appointment");
+    }
+  };
+
+  const createAppointment = async (values: Appointment, formattedDate: any) => {
+    try {
+      const response = await axios.post(
+        "/api/appointments",
+        {
+          ...values,
+          date: formattedDate,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.data) {
+        toast.error("Failed to create appointment");
+      }
+    } catch (error) {
+      console.error("Error creating appointment:", error);
+      toast.error("An error occurred while creating the appointment");
+    }
+  };
+
+  const updateAppointment = async (
+    appointmentId: string | undefined,
+    updatedData: any
+  ) => {
+    try {
+
+      console.log("Update : ", updatedData); 
+
+      const response = await axios.patch(
+        `/api/appointments?id=${appointmentId}`,
+        updatedData,
+        {
+          headers: {
+           
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("Appointment Updated Successfully!", response.data);
+    } catch (error) {
+      console.error("Error updating appointment:", error);
+      toast.error("An error occurred while updating the appointment");
+    }
   };
 
   return (
     <div className="w-full overflow-auto">
       <div className="mb-4">
-        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" /> Add Appointment
-            </Button>
-          </DialogTrigger>
+        <Dialog open={isModalOpen} onOpenChange={handleModal}>
+          
           <DialogContent className="sm:max-w-[425px] min-w-[600px]">
             <DialogHeader>
-              <DialogTitle>Add New Appointment For 05/11/2024</DialogTitle>
+              <DialogTitle>
+                {data ? "Update" : "Add"} New Appointment For{" "}
+                {date?.format("D MMMM YYYY")}
+              </DialogTitle>
             </DialogHeader>
             <Formik
               initialValues={{
+                date: data?.date || formattedDate,
                 time: data?.time || "",
-                name: data?.name || "",
-                surname: data?.surname || "",
-                type: data?.type || "",
-                phone: data?.phone || "",
-                description: data?.description || "",
-                department: data?.department || "",
-                doctor: data?.doctor || "",
-                location: data?.location || "",
+                patientName: data?.patientName || "",
+                patientSurname: data?.patientSurname || "",
+                testType: data?.testType || "",
+                phoneNumber: data?.phoneNumber || "",
+                notes: data?.notes || "",
+                doctorName: data?.doctorName || "",
+                location: data?.location || location,
+                isConfirmed: data?.isConfirmed || true,
               }}
               validationSchema={AppointmentSchema}
-              onSubmit={handleAddAppointment}
+              onSubmit={handleAddOrUpdateAppointment}
             >
               {({ errors, touched, setFieldValue, values }) => (
                 <Form className="space-y-4">
                   <div className="flex space-x-5 w-full">
                     <div className="w-1/2">
-                      <Label htmlFor="name">Name</Label>
-                      <Field name="name" as={Input} id="name" />
-                      {errors.name && touched.name && (
-                        <div className="text-red-500">{errors.name}</div>
+                      <Label htmlFor="patientName">Name</Label>
+                      <Field name="patientName" as={Input} id="patientName" />
+                      {errors.patientName && touched.patientName && (
+                        <div className="text-red-500">{errors.patientName}</div>
                       )}
                     </div>
                     <div className="w-1/2">
-                      <Label htmlFor="surname">Surname</Label>
-                      <Field name="surname" as={Input} id="surname" />
-                      {errors.surname && touched.surname && (
-                        <div className="text-red-500">{errors.surname}</div>
+                      <Label htmlFor="patientSurname">Surname</Label>
+                      <Field
+                        name="patientSurname"
+                        as={Input}
+                        id="patientSurname"
+                      />
+                      {errors.patientSurname && touched.patientSurname && (
+                        <div className="text-red-500">
+                          {errors.patientSurname}
+                        </div>
                       )}
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="phone">Phone</Label>
-                    <Field name="phone" as={Input} id="phone" />
-                    {errors.phone && touched.phone && (
-                      <div className="text-red-500">{errors.phone}</div>
+                    <Label htmlFor="phoneNumber">Phone</Label>
+                    <Field name="phoneNumber" as={Input} id="phoneNumber" />
+                    {errors.phoneNumber && touched.phoneNumber && (
+                      <div className="text-red-500">{errors.phoneNumber}</div>
                     )}
                   </div>
 
                   <div>
-                    <Label htmlFor="department">Tip Ecografie</Label>
+                    <Label htmlFor="testType">Tip Ecografie</Label>
                     <Field
                       as="select"
-                      name="department"
-                      id="department"
+                      name="testType"
+                      id="testType"
                       onChange={(e: any) => {
                         const selected = e.target.value;
-                        setFieldValue("department", selected);
+                        setFieldValue("testType", selected);
                         setSelectedDepartment(selected);
-                        setFieldValue("doctor", ""); // Reset doctor when department changes
+                        setFieldValue("doctorName", ""); // Reset doctor when department changes
                       }}
-                      value={values.department}
+                      value={values.testType}
                       className="block w-full p-2 border border-gray-300 rounded"
                     >
                       <option value="">Select a Tip Ecografie</option>
@@ -140,21 +227,21 @@ export default function AppointmentAddEdit({
                         </option>
                       ))}
                     </Field>
-                    {errors.department && touched.department && (
-                      <div className="text-red-500">{errors.department}</div>
+                    {errors.testType && touched.testType && (
+                      <div className="text-red-500">{errors.testType}</div>
                     )}
                   </div>
 
                   {selectedDepartment && (
                     <div>
-                      <Label htmlFor="doctor">Doctor</Label>
+                      <Label htmlFor="doctorName">Doctor</Label>
                       <Field
                         as="select"
-                        name="doctor"
-                        id="doctor"
-                        value={values.doctor}
+                        name="doctorName"
+                        id="doctorName"
+                        value={values.doctorName}
                         onChange={(e: any) =>
-                          setFieldValue("doctor", e.target.value)
+                          setFieldValue("doctorName", e.target.value)
                         }
                         className="block w-full p-2 border border-gray-300 rounded"
                       >
@@ -167,8 +254,8 @@ export default function AppointmentAddEdit({
                             </option>
                           ))}
                       </Field>
-                      {errors.doctor && touched.doctor && (
-                        <div className="text-red-500">{errors.doctor}</div>
+                      {errors.doctorName && touched.doctorName && (
+                        <div className="text-red-500">{errors.doctorName}</div>
                       )}
                     </div>
                   )}
@@ -189,28 +276,43 @@ export default function AppointmentAddEdit({
                         aria-labelledby="location-group"
                         className="flex space-x-5 border p-2 rounded-lg"
                       >
-                        {locations.map((location) => (
-                          <label
-                            key={location.value}
-                            className="flex items-center"
-                          >
+                        {locations.map((loc) => (
+                          <label key={loc.value} className="flex items-center">
                             <Field
                               type="radio"
                               name="location"
-                              value={location.value}
+                              value={loc.value}
                               className="mr-2"
+                              checked={values.location === loc.value}
                             />
-                            {location.label}
+                            {loc.label}
                           </label>
                         ))}
                       </div>
-                      {errors.location && touched.location && (
-                        <div className="text-red-500">{errors.location}</div>
-                      )}
                     </div>
                   </div>
 
-                  <Button type="submit">Add Appointment</Button>
+                  <div>
+                    <Label htmlFor="notes">Notes</Label>
+                    <Field
+                      as="textarea"
+                      name="notes"
+                      id="notes"
+                      className="block w-full p-2 border border-gray-300 rounded"
+                    />
+                  </div>
+
+                  <div className="flex space-x-5">
+                    <Button
+                      type="submit"
+                      disabled={Object.keys(errors).length > 0}
+                    >
+                      {data ? "Update" : "Add"} Appointment
+                    </Button>
+                    <Button type="button" onClick={handleModal}>
+                      Cancel
+                    </Button>
+                  </div>
                 </Form>
               )}
             </Formik>

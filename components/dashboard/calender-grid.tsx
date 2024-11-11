@@ -1,38 +1,80 @@
-// components/CalendarGrid.js
-import Image from "next/image";
 import { useState } from "react";
+import dayjs from "dayjs";
+import { Search, X } from "lucide-react";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import { dayNameMap } from "@/lib/dayNameMap";
 
-const CalendarGrid = () => {
-  const [location, setLocation] = useState("Oradea");
+dayjs.extend(isSameOrBefore);
 
-  const weeks = [
-    { label: "Săpt 1", dates: ["", "", "", "", "12/04/24"] },
-    {
-      label: "Săpt 2",
-      dates: ["15/04/24", "16/04/24", "17/04/24", "18/04/24", "19/04/24"],
-    },
-    {
-      label: "Săpt 3",
-      dates: ["22/04/24", "23/04/24", "24/04/24", "25/04/24", "26/04/24"],
-    },
-    {
-      label: "Săpt 4",
-      dates: ["29/04/24", "30/04/24", "01/05/24", "02/05/24", "03/05/24"],
-    },
-    {
-      label: "Săpt 5",
-      dates: ["06/05/24", "07/05/24", "08/05/24", "09/05/24", "10/05/24"],
-    },
-  ];
+const CalendarGrid = ({
+  selectedDate,
+  setSelectedDate,
+  location,
+  setLocation,
+  dayName,
+  setDayName
+}: {
+  selectedDate: any;
+  setSelectedDate: any;
+  location:string,
+  setLocation : any
+  dayName:string,
+  setDayName : any
+}) => {
+  const [currentDate, setCurrentDate] = useState(dayjs());
 
-  const days = ["Luni", "Marți", "Miercuri", "Joi", "Vineri"];
+  // Generate days for the calendar grid (Monday to Saturday only)
+  const getCalendarDays = (date: any) => {
+    const startOfMonth = date.startOf("month");
+    const endOfMonth = date.endOf("month");
+  
+    // Adjust the start to the closest Monday before or on the start of the month
+    let currentDay = startOfMonth;
+    while (currentDay.day() !== 1) { // 1 = Monday
+      currentDay = currentDay.subtract(1, "day");
+    }
+  
+    const currentMonthDays = [];
+  
+    // Add days from the adjusted start to the end of the month
+    for (let d = currentDay; d.isSameOrBefore(endOfMonth, "day"); d = d.add(1, "day")) {
+      if (d.day() !== 0) { // Exclude Sundays
+        currentMonthDays.push(d);
+      }
+    }
+  
+    // Ensure the calendar ends on a Saturday
+    let lastDay = currentMonthDays[currentMonthDays.length - 1];
+    while (lastDay.day() !== 6) { // 6 = Saturday
+      lastDay = lastDay.add(1, "day");
+      if (lastDay.day() !== 0) { // Exclude Sundays
+        currentMonthDays.push(lastDay);
+      }
+    }
+  
+    return currentMonthDays;
+  };
+  
+  const calendarDays = getCalendarDays(currentDate);
+
+  // Handle month navigation
+  const handleMonthChange = (direction:any) => {
+    setCurrentDate((prev) => prev.add(direction, "month"));
+  };
+
+  // Format date as "DD/MM/YY"
+  const formatDate = (date:any) => date.format("DD/MM/YY");
+
+  const handleDateSelect = (date:any) => {
+    setSelectedDate(date);
+    setDayName(date.format("dddd"));
+  };
 
   return (
     <div className="flex lg:flex-row flex-col p-4 lg:space-x-10 w-full justify-between lg:px-10 px-5">
-      {/* Sidebar */}
-      <div className="lg:space-y-4 flex items-center lg:flex-col lg:space-x-0 space-x-8 pb-5 lg:pb-0">
-        <div className="flex flex-col space-y-2 border rounded-md px-4 py-2 w-32">
-          <label className="cursor-pointer">
+      <div className="flex lg:flex-col space-y-4 lg:space-x-0 space-x-5 justify-start items-center">
+        <div className="border rounded-md px-4 py-2 w-32">
+          <label className="cursor-pointer flex">
             <input
               type="radio"
               name="location"
@@ -41,9 +83,9 @@ const CalendarGrid = () => {
               onChange={() => setLocation("Beiuș")}
               className="mr-2 cursor-pointer"
             />
-            Beiuș
+            <h3>Beiuș</h3>
           </label>
-          <label className="cursor-pointer">
+          <label className="cursor-pointer flex">
             <input
               type="radio"
               name="location"
@@ -52,57 +94,93 @@ const CalendarGrid = () => {
               onChange={() => setLocation("Oradea")}
               className="mr-2 cursor-pointer"
             />
-            Oradea
+            <h3>Oradea</h3>
           </label>
         </div>
-        {/* Icons */}
-        <div className="flex space-x-2 items-center justify-center">
-          <div className="cursor-pointer hover:shadow-md hover:rounded-lg">
-            <Image src="/calender.png" width={40} height={40} alt="calender" />
+        {/* <div className="flex space-x-2 items-center justify-center">
+          <div className="cursor-pointer bg-blue-200 hover:bg-blue-500 hover:text-white px-2 py-2 rounded">
+            <Search size={18} />
           </div>
-          <div className="cursor-pointer hover:shadow-md hover:rounded-lg">
-            <Image src="/search.png" width={40} height={40} alt="calender" />
+          <div className="cursor-pointer hover:shadow-md bg-red-200 hover:bg-red-400 hover:text-white px-2 py-2 rounded">
+            <X size={18} />
           </div>
-        </div>
+        </div> */}
       </div>
 
-      {/* Calendar Grid */}
-      <div className="flex flex-col w-full">
-        <div className="flex items-center space-x-2">
-          <div className="w-24"></div>
-          {weeks.map((week, index) => (
-            <div key={index} className="lg:w-[150px] w-20  text-center font-normal">
-              {week.label}
-            </div>
-          ))}
+      <div className="flex w-full mt-5 lg:mt-0">
+        <div className="mt-[85px] space-y-[10px] min-w-16">
+          {["Săpt 1", "Săpt 2", "Săpt 3", "Săpt 4", "Săpt 5"].map(
+            (day, index) => (
+              <div key={index} className="font-bold lg:text-[15px] text-[12px]">
+                {day}
+              </div>
+            )
+          )}
         </div>
+        <div className="flex flex-col w-full">
+          {/* Header with Month Navigation */}
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={() => handleMonthChange(-1)}
+              className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded lg:text-[15px] text-[12px]"
+            >
+              ← Previous
+            </button>
+            <div className="text-lg font-bold">
+              {currentDate.format("MMMM YYYY")}
+            </div>
+            <button
+              onClick={() => handleMonthChange(1)}
+              className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded lg:text-[15px] text-[12px]"
+            >
+              Next →
+            </button>
+          </div>
 
-        {/* Days and Dates */}
-        {days.map((day, rowIndex) => (
-          <div
-            key={rowIndex}
-            className="flex items-center lg:space-x-4 space-x-2"
-          >
-            <div className="w-24 lg:px-4 text-left font-normal text-[16px]">{day}</div>
-            {weeks.map((week, colIndex) => (
-              <div
-                key={colIndex}
-                className={`lg:w-[150px] w-20 lg:h-8 h-6 flex items-center justify-center text-white lg:text-[15px] text-[13px] ${
-                  rowIndex === 0 && colIndex === 0
-                    ? "bg-[#BDBDBD]"
-                    : rowIndex === 2 && colIndex === 2
-                    ? "bg-[#6A994E]"
-                    : "bg-[#2096F3]"
-                } border-b rounded-[2px] cursor-pointer `}
-              >
-                {week.dates[rowIndex]}
+          {/* Calendar Grid */}
+          <div className="grid grid-cols-6 gap-2 text-center lg:text-[15px] text-[12px]">
+             {/* Days of the Week */}
+             {[
+              "Luni",
+              "Marți",
+              "Miercuri",
+              "Joi",
+              "Vineri",
+              "Sâmbătă",
+             
+            ].map((day, index) => (
+              <div key={index} className="font-bold">
+                {day}
               </div>
             ))}
+            {/* Dates */}
+            {calendarDays.map((date:any, index:number) => {
+              const isCurrentMonth = date.month() === currentDate.month();
+              const isSelected =
+                selectedDate && date.isSame(selectedDate, "day");
+
+              return (
+                <div
+                  key={index}
+                  onClick={() => handleDateSelect(date)}
+                  className={`border rounded cursor-pointer ${
+                    isCurrentMonth
+                      ? isSelected
+                        ? "bg-green-500 text-white"
+                        : "bg-blue-500 text-white"
+                      : "bg-gray-100 text-gray-400"
+                  }`}
+                >
+                  {formatDate(date)}
+                </div>
+              );
+            })}
           </div>
-        ))}
+        </div>
       </div>
     </div>
   );
 };
 
 export default CalendarGrid;
+

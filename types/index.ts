@@ -6,24 +6,41 @@ export interface Location {
 }
 
 export interface Appointment {
-  _id: string;
-  location: Location;
+  location: string;
   date: Date;
   time: string;
   patientName: string;
   patientSurname: string;
-  ecographyType: string;
+  doctorName: string; 
+  testType: string;
   phoneNumber: string;
-  confirmed: boolean;
-  notes?: string;
+  isConfirmed: boolean;
+  notes: string;
   createdAt?: Date;
 }
 
 export interface User {
-  _id: string;
   username: string;
+  email : string; 
   password: string;
   accessSection: string;
   role: "admin" | "operator";
   createdAt?: Date;
 }
+
+
+export type Schedule = {
+  day: string;
+  startTime: string;
+  endTime: string;
+};
+
+export type Doctor = {
+  name: string;
+  schedule: Schedule[];
+};
+
+export type Department = {
+  name: string;
+  doctors: Doctor[];
+};

@@ -254,6 +254,6 @@ export const departmentsData = [
 ];
 
 export const locations = [
-    { label: "Beiuș", value: "beius" },
-    { label: "Oradea", value: "oradea" },
+    { label: "Beiuș", value: "Beiuș" },
+    { label: "Oradea", value: "Oradea" },
 ];

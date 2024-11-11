@@ -29,7 +29,6 @@ const UserForm: React.FC = () => {
   });
 
   const onSubmit = (values: FormValues, { resetForm }: FormikHelpers<FormValues>) => {
-    console.log("Form Submitted", values);
     // Handle form submission logic here
     resetForm(); // Optionally reset the form
   };
