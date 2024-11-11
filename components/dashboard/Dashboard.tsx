@@ -169,7 +169,7 @@ const Dashboard = () => {
           </div>
         </div>
         {isLoading ? (
-          <div className="py-10 bg-slate-200 rounded-md mt-5">
+          <div className="py-5 bg-slate-200 rounded-md mt-5 h-28 w-[100%]">
             <Spinner />
           </div>
         ) : (

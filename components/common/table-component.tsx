@@ -184,8 +184,8 @@ const TableComponent: React.FC<TableComponentProps> = ({
           </div>
         </>
       ) : (
-        <div className="text-center py-10 bg-slate-200 rounded-md mt-5">
-          No Data available!
+        <div className="text-center flex-col justify-center items-center py-5 bg-slate-200 rounded-md mt-5  h-28 w-[100%]">
+          <p>No Data available!</p>
         </div>
       )}
 
