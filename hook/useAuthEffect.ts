@@ -2,21 +2,24 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store/store";
 import { isTokenExpired } from "@/utils/isTokenExpire";
+import Cookies from "js-cookie";
 
 export const useAuthEffect = () => {
-  const clearUser = useUserStore((state) => state.clearUser);
+  const {clearUser} = useUserStore();
   const router = useRouter();
 
   useEffect(() => {
     const checkAuthToken = async () => {
-      const token = localStorage.getItem("authToken");
+      const token = Cookies.get("authToken");
       if (token) {
         const expired = await isTokenExpired(token);
         if (expired) {
           clearUser();
-          localStorage.removeItem("authToken");
-          router.push("/?session=expired");
+          Cookies.remove("authToken");
+          router.push("/");
         }
+      } else {
+        router.push("/");
       }
     };
 

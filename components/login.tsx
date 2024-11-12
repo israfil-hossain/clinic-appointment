@@ -8,6 +8,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { useUserStore } from "@/store/store";
 import { useAuthEffect } from "@/hook/useAuthEffect";
+import Cookies from "js-cookie";
 
 const signInSchema = Yup.object().shape({
   email: Yup.string()
@@ -22,26 +23,29 @@ const SignIn = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const { setUser } = useUserStore();
-  useAuthEffect(); 
+  useAuthEffect();
 
   const handleSubmit = async (values: any) => {
     try {
       setIsLoading(true);
       const response = await axios.post("/api/login", values);
-      if(response.status === 200){
-        setUser(response.data.user);
-        router.push('/dashboard')
-        toast.success('Signin Successfully!')
+      if (response.status === 200) {
+        const { user, token } = response.data;
+        setUser(user);
+        // Set the token in cookies
+        Cookies.set("authToken", token, { expires: 7 });
+        router.push("/dashboard");
+        toast.success("Signin Successfully!");
       }
-      if(response.status === 404 || response.status === 400){
-        toast.error(response.statusText || "Something went wrong!")
+      else {
+        toast.error(response.statusText || "Something went wrong!");
       }
-      setIsLoading(false); 
-
     } catch (err) {
       console.log(err);
-      toast.error('Something went wrong !')
-      setIsLoading(false); 
+      toast.error("Something went wrong !");
+    }
+    finally {
+      setIsLoading(false);
     }
   };
 
@@ -60,8 +64,10 @@ const SignIn = () => {
         <h2 className="text-2xl font-bold text-center text-gray-800">
           Sign In
         </h2>
-        <p className="text-sm text-red-500 ">Test Email : admin@gmail.com  <br/> Test Password : 123456</p>
-      
+        <p className="text-sm text-red-500 ">
+          Test Email : admin@gmail.com <br /> Test Password : 123456
+        </p>
+
         <Formik
           initialValues={{ email: "", password: "" }}
           onSubmit={handleSubmit}
@@ -114,7 +120,7 @@ const SignIn = () => {
                 disabled={isSubmitting || isLoading}
                 className="w-full py-2 px-4 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
-                {(isSubmitting || isLoading) ? "Signing in..." : "Sign In"}
+                {isSubmitting || isLoading ? "Signing in..." : "Sign In"}
               </button>
             </Form>
           )}

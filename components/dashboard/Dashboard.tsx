@@ -11,6 +11,7 @@ import dayjs from "dayjs";
 import { dayNameMap } from "@/lib/dayNameMap";
 import axios from "axios";
 import Spinner from "../common/loader";
+import { generatePDF } from "@/utils/pdfUtils";
 
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -77,13 +78,21 @@ const Dashboard = () => {
 
   const handleTestTypeSelection = (testType: string) => {
     setSelectedTestType(testType);
-    
   };
 
   const handleReset = () => {
     setSelectedTestType(null);
-    setLocation("Oradea")
-    setSelectedDate(dayjs()); 
+    setLocation("Oradea");
+    setSelectedDate(dayjs());
+  };
+
+  const handleDownloadPDF = () => {
+    generatePDF({
+      data,
+      location,
+      day: selectDay,
+      date: selectedDate?.format("D MMMM YYYY"),
+    });
   };
 
   return (
@@ -162,11 +171,12 @@ const Dashboard = () => {
             )}
           </div>
 
-          <div className="bg-blue-500 hover:bg-blue-400 cursor-pointer rounded-sm items-center px-1 font-medium text-[14px] text-white text-center w-20 py-1">
-            <p className="font-medium text-[14px] text-white text-center">
-              List
-            </p>
-          </div>
+          <button
+            className="bg-blue-500 hover:bg-blue-400 text-white rounded px-4 py-1"
+            onClick={handleDownloadPDF}
+          >
+            Download PDF
+          </button>
         </div>
         {isLoading ? (
           <div className="py-5 bg-slate-200 rounded-md mt-5 h-28 w-[100%]">

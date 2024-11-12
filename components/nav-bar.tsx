@@ -6,6 +6,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store/store";
+import Cookies from "js-cookie";
 
 export default function Navbar() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     const res = await axios.get("/api/logout");
+    Cookies.remove("authToken");
     clearUser();
     toast.success(res.data.message);
     router.push("/");
@@ -33,9 +35,12 @@ export default function Navbar() {
               className="w-16 h-8 rounded-sm"
             />
           </Link>
-          <Link href="/dashboard" className=" hover:text-blue-400">
-            Dashboard
-          </Link>
+          {user && (
+            <Link href="/dashboard" className=" hover:text-blue-400">
+              Dashboard
+            </Link>
+          )}
+
           {/* <Link href="/users" className=" hover:text-blue-400">
             Users
           </Link> */}
@@ -48,7 +53,9 @@ export default function Navbar() {
             <>
               <div className="flex-col lg:flex hidden mr-5">
                 <p className="text-[16px] font-bold ">{user?.username}</p>
-                <p className="text-[12px] font-normal text-blue-600">{user?.role}</p>
+                <p className="text-[12px] font-normal text-blue-600">
+                  {user?.role}
+                </p>
               </div>
               <button
                 onClick={handleLogout}

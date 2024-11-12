@@ -25,6 +25,9 @@
     "dotenv": "^16.4.5",
     "formik": "^2.4.6",
     "jose": "^5.9.6",
+    "js-cookie": "^3.0.5",
+    "jspdf": "^2.5.2",
+    "jspdf-autotable": "^3.8.4",
     "lucide-react": "^0.454.0",
     "mongoose": "^8.8.0",
     "next": "15.0.2",
@@ -39,6 +42,8 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
+    "@types/js-cookie": "^3.0.6",
+    "@types/jspdf": "^2.0.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

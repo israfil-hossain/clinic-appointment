@@ -14,20 +14,10 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
   if (token) {
     try {
-      const { payload } = await jwtVerify(token, secret);
-      const tokenExpiration = new Date((payload as JWTPayload)?.exp! * 1000);
-
-      if (tokenExpiration <= new Date()) {
-        const url = new URL("/", request.url);
-
-        url.searchParams.set("session", "expired");
-        return NextResponse.redirect(url);
-      }
-
+      await jwtVerify(token, secret); // This verifies `exp` automatically
       if (isPublicPath && path === "/") {
         return NextResponse.redirect(new URL("/dashboard", request.url));
       }
-
       return NextResponse.next();
     } catch (err) {
       console.error("JWT Error:", err);
@@ -36,10 +26,11 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
       return NextResponse.redirect(url);
     }
   }
+  
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/", "/register", "/doctors", "/dashboard", "/users"],
+  matcher: ["/","/doctors", "/dashboard"],
 };

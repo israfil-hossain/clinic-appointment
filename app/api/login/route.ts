@@ -35,9 +35,10 @@ export async function POST(request: NextRequest) {
     }
 
     const jwtSecret = new TextEncoder().encode(secret);
+    const sevenDaysInSeconds = 7 * 24 * 60 * 60;
     const token = await new SignJWT({ userId: user._id })
       .setProtectedHeader({ alg: "HS256" })
-      .setExpirationTime("1h")
+      .setExpirationTime(Math.floor(Date.now() / 1000) + sevenDaysInSeconds)
       .sign(jwtSecret);
 
     const userResponse = {
@@ -57,7 +58,7 @@ export async function POST(request: NextRequest) {
       value: token, 
       path: "/",
       httpOnly: true, 
-      maxAge: 3600, 
+      maxAge: 7 * 24 * 60 * 60 * 1000, 
       secure: process.env.NODE_ENV === "production", 
     });
 
