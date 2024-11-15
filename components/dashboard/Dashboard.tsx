@@ -12,9 +12,11 @@ import { dayNameMap } from "@/lib/dayNameMap";
 import axios from "axios";
 import Spinner from "../common/loader";
 import { generatePDF } from "@/utils/pdfUtils";
+import EcoTable from "../common/EcoTable";
 
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isEco, setIsEco] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<dayjs.Dayjs | null>(dayjs());
   const [location, setLocation] = useState("Oradea");
@@ -78,12 +80,14 @@ const Dashboard = () => {
 
   const handleTestTypeSelection = (testType: string) => {
     setSelectedTestType(testType);
+    setIsEco(false);
   };
 
   const handleReset = () => {
     setSelectedTestType(null);
     setLocation("Oradea");
-    setSelectedDate(dayjs());
+    setSelectedDate(dayjs()); 
+    setIsEco(false); 
   };
 
   const handleDownloadPDF = () => {
@@ -109,17 +113,17 @@ const Dashboard = () => {
           </div>
         </div>
         <div className="w-full bg-white grid lg:grid-cols-5 md:grid-cols-3 grid-cols-2 gap-3 p-5">
-          <div className="flex justify-center items-center px-4 py-1  text-white text-[15px] font-medium bg-indigo-500 shadow-lg rounded-md hover:bg-indigo-600 text-center">
+          <div className="cursor-pointer flex justify-center items-center px-4 py-1  text-white text-[15px] font-medium bg-indigo-500 shadow-lg rounded-md hover:bg-indigo-600 text-center"
+            onClick={() => setIsEco(true)}>
             Ecography
           </div>
 
           {departmentsData?.map((item, index) => (
             <div
-              className={`cursor-pointer flex justify-center items-center px-4 py-1 text-white text-[15px] font-medium rounded-md  text-center ${
-                selectedTestType === item.name
+              className={`cursor-pointer flex justify-center items-center px-4 py-1 text-white text-[15px] font-medium rounded-md  text-center ${selectedTestType === item.name
                   ? "bg-green-500"
                   : "bg-indigo-500 hover:bg-green-500"
-              }`}
+                }`}
               key={index}
               onClick={() => handleTestTypeSelection(item.name)}
             >
@@ -142,11 +146,10 @@ const Dashboard = () => {
         </div>
         <div className="w-full flex justify-between lg:px-10 px-5 ">
           <div
-            className={`relative ${
-              selectedDate
+            className={`relative ${selectedDate
                 ? "bg-[#D6EDFF] hover:bg-blue-200 cursor-pointer"
                 : "bg-gray-300 cursor-not-allowed"
-            } rounded-sm p-1 px-4 flex items-center space-x-2`}
+              } rounded-sm p-1 px-4 flex items-center space-x-2`}
             onClick={() => {
               if (selectedDate) setIsModalOpen(true);
             }}
@@ -156,9 +159,8 @@ const Dashboard = () => {
               className={selectedDate ? "text-blue-500" : "text-gray-400"}
             />
             <p
-              className={`font-medium text-[14px] ${
-                selectedDate ? "text-blue-500" : "text-gray-500"
-              }`}
+              className={`font-medium text-[14px] ${selectedDate ? "text-blue-500" : "text-gray-500"
+                }`}
             >
               Adauga Rand
             </p>
@@ -183,12 +185,25 @@ const Dashboard = () => {
             <Spinner />
           </div>
         ) : (
-          <TableComponent
-            appointments={data || []}
-            onView={handleView}
-            onEdit={handleEdit}
-            fetchData={fetchAppointments}
-          />
+          <>
+            {
+              isEco ? <div>
+                <EcoTable 
+                  appointments={data || []}
+                  onView={handleView}
+                  onEdit={handleEdit}
+                  fetchData={fetchAppointments}/>
+              </div>
+                :
+                <TableComponent
+                  appointments={data || []}
+                  onView={handleView}
+                  onEdit={handleEdit}
+                  fetchData={fetchAppointments}
+                />
+            }
+          </>
+
         )}
       </div>
       <AppointmentAddEdit
