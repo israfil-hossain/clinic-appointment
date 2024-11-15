@@ -80,14 +80,13 @@ const Dashboard = () => {
 
   const handleTestTypeSelection = (testType: string) => {
     setSelectedTestType(testType);
-    setIsEco(false);
   };
 
   const handleReset = () => {
     setSelectedTestType(null);
     setLocation("Oradea");
-    setSelectedDate(dayjs()); 
-    setIsEco(false); 
+    setSelectedDate(dayjs());
+    setIsEco(false);
   };
 
   const handleDownloadPDF = () => {
@@ -114,15 +113,18 @@ const Dashboard = () => {
         </div>
         <div className="w-full bg-white grid lg:grid-cols-5 md:grid-cols-3 grid-cols-2 gap-3 p-5">
           <div className="cursor-pointer flex justify-center items-center px-4 py-1  text-white text-[15px] font-medium bg-indigo-500 shadow-lg rounded-md hover:bg-indigo-600 text-center"
-            onClick={() => setIsEco(true)}>
+            onClick={() => {
+              setIsEco(true)
+              handleTestTypeSelection("Ecographie")
+            }}>
             Ecography
           </div>
 
           {departmentsData?.map((item, index) => (
             <div
               className={`cursor-pointer flex justify-center items-center px-4 py-1 text-white text-[15px] font-medium rounded-md  text-center ${selectedTestType === item.name
-                  ? "bg-green-500"
-                  : "bg-indigo-500 hover:bg-green-500"
+                ? "bg-green-500"
+                : "bg-indigo-500 hover:bg-green-500"
                 }`}
               key={index}
               onClick={() => handleTestTypeSelection(item.name)}
@@ -147,8 +149,8 @@ const Dashboard = () => {
         <div className="w-full flex justify-between lg:px-10 px-5 ">
           <div
             className={`relative ${selectedDate
-                ? "bg-[#D6EDFF] hover:bg-blue-200 cursor-pointer"
-                : "bg-gray-300 cursor-not-allowed"
+              ? "bg-[#D6EDFF] hover:bg-blue-200 cursor-pointer"
+              : "bg-gray-300 cursor-not-allowed"
               } rounded-sm p-1 px-4 flex items-center space-x-2`}
             onClick={() => {
               if (selectedDate) setIsModalOpen(true);
@@ -188,11 +190,11 @@ const Dashboard = () => {
           <>
             {
               isEco ? <div>
-                <EcoTable 
+                <EcoTable
                   appointments={data || []}
                   onView={handleView}
                   onEdit={handleEdit}
-                  fetchData={fetchAppointments}/>
+                  fetchData={fetchAppointments} />
               </div>
                 :
                 <TableComponent
@@ -209,6 +211,7 @@ const Dashboard = () => {
       <AppointmentAddEdit
         isModalOpen={isModalOpen}
         handleModal={handleModal}
+        isEco={isEco}
         date={selectedDate}
         location={location}
         fetchAppointments={fetchAppointments}

@@ -24,6 +24,9 @@ interface Appointment {
     fetchData: () => void;
   }
 
+  const normalizeTime = (time: string) => {
+    return time.padStart(5, "0"); // Normalize to "08:30" format, for example
+  };
 const EcoTable: React.FC<TableComponentProps> = ({
     appointments,
     fetchData,
@@ -34,14 +37,18 @@ const EcoTable: React.FC<TableComponentProps> = ({
       "11:00", "11:15", "11:30", "11:45", "12:00", "12:15", "12:30", "12:45", "13:00", 
       "13:15", "13:30", "13:45", "14:00"
     ];
+    console.log("appointment : ===> ", appointments)
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [appointmentToDelete, setAppointmentToDelete] =
       useState<Appointment | null>(null);
   
     // Convert appointments array to an object for easy lookup
     const appointmentsMap = new Map(
-      appointments.map((appt) => [appt.time, appt])
-    );
+        appointments.map((appt) => [normalizeTime(appt.time), appt]) // normalize time here
+      );
+
+      console.log("App : ", appointmentsMap);
 
     const confirmDelete = (appointment: Appointment) => {
         setAppointmentToDelete(appointment);
@@ -79,9 +86,9 @@ const EcoTable: React.FC<TableComponentProps> = ({
             </tr>
           </thead>
           <tbody>
-            {timeSlots.map((timeSlot) => {
-              const appointment = appointmentsMap.get(timeSlot);
-  
+          {timeSlots.map((timeSlot) => {
+            const appointment = appointmentsMap.get(normalizeTime(timeSlot)); // Use normalized time to fetch appointment
+            
               return (
                 <tr key={timeSlot} className="bg-white">
                   <td className="border border-gray-200 px-4 py-2 text-gray-700">{timeSlot}</td>
@@ -105,13 +112,13 @@ const EcoTable: React.FC<TableComponentProps> = ({
                   </td>
                   <td className="border border-gray-200 px-4 py-2 flex space-x-2">
                     <button
-                      onClick={() => appointment && onEdit(appointment)} // Pass the full appointment object
+                      onClick={() => appointment &&  onEdit(appointment)} 
                       className="text-blue-500"
                     >
                       <Edit size={20} />
                     </button>
                     <button
-                      onClick={() => confirmDelete(appointment)}
+                      onClick={() => appointment &&  confirmDelete(appointment)}
                       className="text-red-500"
                     >
                       <Trash size={20} />

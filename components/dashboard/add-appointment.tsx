@@ -48,7 +48,8 @@ const AppointmentSchema = Yup.object().shape({
 
 interface AppointmentAddEditProps {
   isModalOpen: boolean;
-  handleModal: () => void; 
+  isEco?: boolean;
+  handleModal: () => void;
   date?: any;
   location: string;
   data?: Appointment | null;
@@ -57,6 +58,7 @@ interface AppointmentAddEditProps {
 
 export default function AppointmentAddEdit({
   isModalOpen,
+  isEco,
   handleModal,
   date,
   location,
@@ -125,14 +127,14 @@ export default function AppointmentAddEdit({
   ) => {
     try {
 
-      console.log("Update : ", updatedData); 
+      console.log("Update : ", updatedData);
 
       const response = await axios.patch(
         `/api/appointments?id=${appointmentId}`,
         updatedData,
         {
           headers: {
-           
+
             "Content-Type": "application/json",
           },
         }
@@ -149,7 +151,7 @@ export default function AppointmentAddEdit({
     <div className="w-full overflow-auto">
       <div className="mb-4">
         <Dialog open={isModalOpen} onOpenChange={handleModal}>
-          
+
           <DialogContent className="sm:max-w-[425px] min-w-[600px]">
             <DialogHeader>
               <DialogTitle>
@@ -163,10 +165,10 @@ export default function AppointmentAddEdit({
                 time: data?.time || "",
                 patientName: data?.patientName || "",
                 patientSurname: data?.patientSurname || "",
-                testType: data?.testType || "",
+                testType: isEco ? "Ecographie" : data?.testType || "",
                 phoneNumber: data?.phoneNumber || "",
                 notes: data?.notes || "",
-                doctorName: data?.doctorName || "",
+                doctorName: isEco ? "xyz" : data?.doctorName || "",
                 location: data?.location || location,
                 isConfirmed: data?.isConfirmed || true,
               }}
@@ -207,58 +209,77 @@ export default function AppointmentAddEdit({
 
                   <div>
                     <Label htmlFor="testType">Tip Ecografie</Label>
-                    <Field
-                      as="select"
-                      name="testType"
-                      id="testType"
-                      onChange={(e: any) => {
-                        const selected = e.target.value;
-                        setFieldValue("testType", selected);
-                        setSelectedDepartment(selected);
-                        setFieldValue("doctorName", ""); // Reset doctor when department changes
-                      }}
-                      value={values.testType}
-                      className="block w-full p-2 border border-gray-300 rounded"
-                    >
-                      <option value="">Select a Tip Ecografie</option>
-                      {departmentsData.map((dept) => (
-                        <option key={dept.name} value={dept.name}>
-                          {dept.name}
-                        </option>
-                      ))}
-                    </Field>
+                    {
+                      isEco ?
+                        <Field name="testType" as={Input} id="testType" />
+
+                        :
+                        <Field
+                          as="select"
+                          name="testType"
+                          id="testType"
+                          onChange={(e: any) => {
+                            const selected = e.target.value;
+                            setFieldValue("testType", selected);
+                            setSelectedDepartment(selected);
+                            setFieldValue("doctorName", ""); // Reset doctor when department changes
+                          }}
+                          value={values.testType}
+                          className="block w-full p-2 border border-gray-300 rounded"
+                        >
+                          <option value="">Select a Tip Ecografie</option>
+                          {departmentsData.map((dept) => (
+                            <option key={dept.name} value={dept.name}>
+                              {dept.name}
+                            </option>
+                          ))}
+                        </Field>
+                    }
                     {errors.testType && touched.testType && (
                       <div className="text-red-500">{errors.testType}</div>
                     )}
                   </div>
 
-                  {selectedDepartment && (
-                    <div>
-                      <Label htmlFor="doctorName">Doctor</Label>
-                      <Field
-                        as="select"
-                        name="doctorName"
-                        id="doctorName"
-                        value={values.doctorName}
-                        onChange={(e: any) =>
-                          setFieldValue("doctorName", e.target.value)
-                        }
-                        className="block w-full p-2 border border-gray-300 rounded"
-                      >
-                        <option value="">Select a doctor</option>
-                        {departmentsData
-                          .find((dept: any) => dept.name === selectedDepartment)
-                          ?.doctors.map((doc: any) => (
-                            <option key={doc.name} value={doc.name}>
-                              {doc.name}
-                            </option>
-                          ))}
-                      </Field>
-                      {errors.doctorName && touched.doctorName && (
-                        <div className="text-red-500">{errors.doctorName}</div>
-                      )}
-                    </div>
-                  )}
+                  {
+                    isEco ?
+                      <div>
+                        <Label htmlFor="doctorName">Doctor</Label>
+                        <Field name="doctorName" as={Input} id="doctorName" />
+                        {errors.doctorName && touched.doctorName && (
+                          <div className="text-red-500">{errors.doctorName}</div>
+                        )}
+                      </div>
+                      : <>
+                        {selectedDepartment && (
+                          <div>
+                            <Label htmlFor="doctorName">Doctor</Label>
+                            <Field
+                              as="select"
+                              name="doctorName"
+                              id="doctorName"
+                              value={values.doctorName}
+                              onChange={(e: any) =>
+                                setFieldValue("doctorName", e.target.value)
+                              }
+                              className="block w-full p-2 border border-gray-300 rounded"
+                            >
+                              <option value="">Select a doctor</option>
+                              {departmentsData
+                                .find((dept: any) => dept.name === selectedDepartment)
+                                ?.doctors.map((doc: any) => (
+                                  <option key={doc.name} value={doc.name}>
+                                    {doc.name}
+                                  </option>
+                                ))}
+                            </Field>
+                            {errors.doctorName && touched.doctorName && (
+                              <div className="text-red-500">{errors.doctorName}</div>
+                            )}
+                          </div>
+                        )}
+                      </>
+                  }
+
 
                   <div className="w-full flex space-x-5">
                     <div className="w-32">
