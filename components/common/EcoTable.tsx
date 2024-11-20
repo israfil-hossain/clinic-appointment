@@ -18,27 +18,23 @@ interface Appointment {
   }
 
   interface TableComponentProps {
+    timeSlots : any,
     appointments: Appointment[];
     onView: (appointment: Appointment) => void;
     onEdit: (appointment: Appointment) => void;
     fetchData: () => void;
   }
+ 
 
   const normalizeTime = (time: string) => {
     return time.padStart(5, "0"); // Normalize to "08:30" format, for example
   };
 const EcoTable: React.FC<TableComponentProps> = ({
+    timeSlots,
     appointments,
     fetchData,
     onEdit,
   }) => {
-    const timeSlots = [
-      "8:30", "8:45", "9:00", "9:15", "9:30", "9:45", "10:00", "10:15", "10:30", "10:45", 
-      "11:00", "11:15", "11:30", "11:45", "12:00", "12:15", "12:30", "12:45", "13:00", 
-      "13:15", "13:30", "13:45", "14:00"
-    ];
-    console.log("appointment : ===> ", appointments)
-
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [appointmentToDelete, setAppointmentToDelete] =
       useState<Appointment | null>(null);
@@ -48,7 +44,6 @@ const EcoTable: React.FC<TableComponentProps> = ({
         appointments.map((appt) => [normalizeTime(appt.time), appt]) // normalize time here
       );
 
-      console.log("App : ", appointmentsMap);
 
     const confirmDelete = (appointment: Appointment) => {
         setAppointmentToDelete(appointment);
@@ -71,7 +66,7 @@ const EcoTable: React.FC<TableComponentProps> = ({
       };
   
     return (
-      <div className="overflow-x-auto lg:px-10 px-5 mb-10">
+      <div className="overflow-x-auto lg:px-10 px-5 mb-5">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-white">
@@ -86,7 +81,7 @@ const EcoTable: React.FC<TableComponentProps> = ({
             </tr>
           </thead>
           <tbody>
-          {timeSlots.map((timeSlot) => {
+          {timeSlots.map((timeSlot:any) => {
             const appointment = appointmentsMap.get(normalizeTime(timeSlot)); // Use normalized time to fetch appointment
             
               return (

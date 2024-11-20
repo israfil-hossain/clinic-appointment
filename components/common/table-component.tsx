@@ -78,7 +78,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
   };
 
   return (
-    <div className="overflow-x-auto lg:px-10 px-5 mb-10">
+    <div className="overflow-x-auto lg:px-10 px-5 mb-5">
       {appointments?.length > 0 ? (
         <>
           <table className="w-full text-sm">

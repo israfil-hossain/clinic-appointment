@@ -19,6 +19,12 @@ export interface Appointment {
   createdAt?: Date;
 }
 
+export interface Notes{
+  date: Date;
+  notes: string; 
+  createdAt?: Date;
+}
+
 export interface User {
   username: string;
   email : string; 

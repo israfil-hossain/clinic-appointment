@@ -19,6 +19,8 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import utc from "dayjs/plugin/utc";
 import dayjs from "dayjs";
+import { useTimeSlotStore } from "@/store/timeStore";
+
 
 dayjs.extend(utc);
 
@@ -66,6 +68,7 @@ export default function AppointmentAddEdit({
   fetchAppointments,
 }: AppointmentAddEditProps) {
   const [selectedDepartment, setSelectedDepartment] = useState("");
+  const { timeSlots } = useTimeSlotStore();
 
   const appointmentDate = dayjs(date).startOf("day");
   const formattedDate = appointmentDate.format("YYYY-MM-DD");
@@ -126,21 +129,16 @@ export default function AppointmentAddEdit({
     updatedData: any
   ) => {
     try {
-
-      console.log("Update : ", updatedData);
-
       const response = await axios.patch(
         `/api/appointments?id=${appointmentId}`,
         updatedData,
         {
           headers: {
-
             "Content-Type": "application/json",
           },
         }
       );
 
-      console.log("Appointment Updated Successfully!", response.data);
     } catch (error) {
       console.error("Error updating appointment:", error);
       toast.error("An error occurred while updating the appointment");
@@ -151,7 +149,6 @@ export default function AppointmentAddEdit({
     <div className="w-full overflow-auto">
       <div className="mb-4">
         <Dialog open={isModalOpen} onOpenChange={handleModal}>
-
           <DialogContent className="sm:max-w-[425px] min-w-[600px]">
             <DialogHeader>
               <DialogTitle>
@@ -168,7 +165,7 @@ export default function AppointmentAddEdit({
                 testType: isEco ? "Ecographie" : data?.testType || "",
                 phoneNumber: data?.phoneNumber || "",
                 notes: data?.notes || "",
-                doctorName: isEco ? "xyz" : data?.doctorName || "",
+                doctorName: isEco ? "-" : data?.doctorName || "",
                 location: data?.location || location,
                 isConfirmed: data?.isConfirmed || true,
               }}
@@ -209,86 +206,106 @@ export default function AppointmentAddEdit({
 
                   <div>
                     <Label htmlFor="testType">Tip Ecografie</Label>
-                    {
-                      isEco ?
-                        <Field name="testType" as={Input} id="testType" />
-
-                        :
-                        <Field
-                          as="select"
-                          name="testType"
-                          id="testType"
-                          onChange={(e: any) => {
-                            const selected = e.target.value;
-                            setFieldValue("testType", selected);
-                            setSelectedDepartment(selected);
-                            setFieldValue("doctorName", ""); // Reset doctor when department changes
-                          }}
-                          value={values.testType}
-                          className="block w-full p-2 border border-gray-300 rounded"
-                        >
-                          <option value="">Select a Tip Ecografie</option>
-                          {departmentsData.map((dept) => (
-                            <option key={dept.name} value={dept.name}>
-                              {dept.name}
-                            </option>
-                          ))}
-                        </Field>
-                    }
+                    {isEco ? (
+                      <Field name="testType" as={Input} id="testType" />
+                    ) : (
+                      <Field
+                        as="select"
+                        name="testType"
+                        id="testType"
+                        onChange={(e: any) => {
+                          const selected = e.target.value;
+                          setFieldValue("testType", selected);
+                          setSelectedDepartment(selected);
+                          setFieldValue("doctorName", ""); // Reset doctor when department changes
+                        }}
+                        value={values.testType}
+                        className="block w-full p-2 border border-gray-300 rounded"
+                      >
+                        <option value="">Select a Tip Ecografie</option>
+                        {departmentsData.map((dept) => (
+                          <option key={dept.name} value={dept.name}>
+                            {dept.name}
+                          </option>
+                        ))}
+                      </Field>
+                    )}
                     {errors.testType && touched.testType && (
                       <div className="text-red-500">{errors.testType}</div>
                     )}
                   </div>
 
-                  {
-                    isEco ?
-                      <div>
-                        <Label htmlFor="doctorName">Doctor</Label>
-                        <Field name="doctorName" as={Input} id="doctorName" />
-                        {errors.doctorName && touched.doctorName && (
-                          <div className="text-red-500">{errors.doctorName}</div>
-                        )}
-                      </div>
-                      : <>
-                        {selectedDepartment && (
-                          <div>
-                            <Label htmlFor="doctorName">Doctor</Label>
-                            <Field
-                              as="select"
-                              name="doctorName"
-                              id="doctorName"
-                              value={values.doctorName}
-                              onChange={(e: any) =>
-                                setFieldValue("doctorName", e.target.value)
-                              }
-                              className="block w-full p-2 border border-gray-300 rounded"
-                            >
-                              <option value="">Select a doctor</option>
-                              {departmentsData
-                                .find((dept: any) => dept.name === selectedDepartment)
-                                ?.doctors.map((doc: any) => (
-                                  <option key={doc.name} value={doc.name}>
-                                    {doc.name}
-                                  </option>
-                                ))}
-                            </Field>
-                            {errors.doctorName && touched.doctorName && (
-                              <div className="text-red-500">{errors.doctorName}</div>
-                            )}
-                          </div>
-                        )}
-                      </>
-                  }
-
-
-                  <div className="w-full flex space-x-5">
-                    <div className="w-32">
-                      <Label htmlFor="time">Time</Label>
-                      <Field name="time" type="time" as={Input} id="time" />
-                      {errors.time && touched.time && (
-                        <div className="text-red-500">{errors.time}</div>
+                  {isEco ? (
+                    <div>
+                      <Label htmlFor="doctorName">Doctor</Label>
+                      <Field name="doctorName" as={Input} id="doctorName" />
+                      {errors.doctorName && touched.doctorName && (
+                        <div className="text-red-500">{errors.doctorName}</div>
                       )}
                     </div>
+                  ) : (
+                    <>
+                      {selectedDepartment && (
+                        <div>
+                          <Label htmlFor="doctorName">Doctor</Label>
+                          <Field
+                            as="select"
+                            name="doctorName"
+                            id="doctorName"
+                            value={values.doctorName}
+                            onChange={(e: any) =>
+                              setFieldValue("doctorName", e.target.value)
+                            }
+                            className="block w-full p-2 border border-gray-300 rounded"
+                          >
+                            <option value="">Select a doctor</option>
+                            {departmentsData
+                              .find(
+                                (dept: any) => dept.name === selectedDepartment
+                              )
+                              ?.doctors.map((doc: any) => (
+                                <option key={doc.name} value={doc.name}>
+                                  {doc.name}
+                                </option>
+                              ))}
+                          </Field>
+                          {errors.doctorName && touched.doctorName && (
+                            <div className="text-red-500">
+                              {errors.doctorName}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  <div className="w-full flex space-x-5">
+                    {isEco ? (
+                      <>
+                        <div>
+                          <Label htmlFor="time">Time</Label>
+                          <Field as="select" name="time" id="time">
+                            <option value="">Select a time</option>
+                            {timeSlots.map((slot:any) => (
+                              <option key={slot} value={slot}>
+                                {slot}
+                              </option>
+                            ))}
+                          </Field>
+                          {errors.time && touched.time && (
+                            <div className="text-red-500">{errors.time}</div>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="w-32">
+                        <Label htmlFor="time">Time</Label>
+                        <Field name="time" type="time" as={Input} id="time" />
+                        {errors.time && touched.time && (
+                          <div className="text-red-500">{errors.time}</div>
+                        )}
+                      </div>
+                    )}
 
                     <div>
                       <Label>Location</Label>

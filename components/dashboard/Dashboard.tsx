@@ -13,10 +13,12 @@ import axios from "axios";
 import Spinner from "../common/loader";
 import { generatePDF } from "@/utils/pdfUtils";
 import EcoTable from "../common/EcoTable";
+import Notes from "./Notes";
+import { getTimeSlotsByLocationAndDay } from "@/lib/timeSlots";
+import { useTimeSlotStore } from "@/store/timeStore";
 
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [isEco, setIsEco] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<dayjs.Dayjs | null>(dayjs());
   const [location, setLocation] = useState("Oradea");
@@ -24,15 +26,19 @@ const Dashboard = () => {
   const [editData, setEditData] = useState<any>(null);
   const [data, setAppointments] = useState<any>(null);
   const [selectedTestType, setSelectedTestType] = useState<string | null>(null);
+  const { setTimeSlots,timeSlots } = useTimeSlotStore();
 
   const handleModal = () => {
     setIsModalOpen(false);
     setEditData(null);
   };
-
+ 
+  // Map the Normal Day with Romania Day name ... 
   const selectDay =
     selectedDate?.format("dddd") && dayNameMap[selectedDate?.format("dddd")];
 
+  
+  // Get The Appointments by API Calling .... 
   const fetchAppointments = async () => {
     try {
       setIsLoading(true);
@@ -69,7 +75,6 @@ const Dashboard = () => {
   };
 
   const handleEdit = async (appointment: any) => {
-    console.log(appointment);
     if (!selectedDate) {
       alert(`Please Select Date. `);
     } else {
@@ -78,6 +83,7 @@ const Dashboard = () => {
     }
   };
 
+  // Handle The Tab Selection ... 
   const handleTestTypeSelection = (testType: string) => {
     setSelectedTestType(testType);
   };
@@ -86,9 +92,9 @@ const Dashboard = () => {
     setSelectedTestType(null);
     setLocation("Oradea");
     setSelectedDate(dayjs());
-    setIsEco(false);
   };
 
+  // Handle PDF Download Function ... 
   const handleDownloadPDF = () => {
     generatePDF({
       data,
@@ -97,6 +103,18 @@ const Dashboard = () => {
       date: selectedDate?.format("D MMMM YYYY"),
     });
   };
+
+  // According to Location and Day Name Get the timeSlots.... 
+  const fetchTimeSlots = () => {
+    if (location && selectDay) {
+      const slots = getTimeSlotsByLocationAndDay(location, selectDay);
+      setTimeSlots(slots);
+    }
+  };
+
+  useEffect(() => {
+    fetchTimeSlots();
+  }, [location, selectDay]);
 
   return (
     <div className="flex flex-col items-center justify-start  bg-gray-200 py-5">
@@ -112,20 +130,26 @@ const Dashboard = () => {
           </div>
         </div>
         <div className="w-full bg-white grid lg:grid-cols-5 md:grid-cols-3 grid-cols-2 gap-3 p-5">
-          <div className="cursor-pointer flex justify-center items-center px-4 py-1  text-white text-[15px] font-medium bg-indigo-500 shadow-lg rounded-md hover:bg-indigo-600 text-center"
+          <div
+            className={`cursor-pointer flex justify-center items-center px-4 py-1 text-white text-[15px] font-medium rounded-md  text-center ${
+              selectedTestType === "Ecographie"
+                ? "bg-green-500"
+                : "bg-indigo-500 hover:bg-green-500"
+            }`}
             onClick={() => {
-              setIsEco(true)
-              handleTestTypeSelection("Ecographie")
-            }}>
+              handleTestTypeSelection("Ecographie");
+            }}
+          >
             Ecography
           </div>
 
           {departmentsData?.map((item, index) => (
             <div
-              className={`cursor-pointer flex justify-center items-center px-4 py-1 text-white text-[15px] font-medium rounded-md  text-center ${selectedTestType === item.name
-                ? "bg-green-500"
-                : "bg-indigo-500 hover:bg-green-500"
-                }`}
+              className={`cursor-pointer flex justify-center items-center px-4 py-1 text-white text-[15px] font-medium rounded-md  text-center ${
+                selectedTestType === item.name
+                  ? "bg-green-500"
+                  : "bg-indigo-500 hover:bg-green-500"
+              }`}
               key={index}
               onClick={() => handleTestTypeSelection(item.name)}
             >
@@ -148,10 +172,11 @@ const Dashboard = () => {
         </div>
         <div className="w-full flex justify-between lg:px-10 px-5 ">
           <div
-            className={`relative ${selectedDate
-              ? "bg-[#D6EDFF] hover:bg-blue-200 cursor-pointer"
-              : "bg-gray-300 cursor-not-allowed"
-              } rounded-sm p-1 px-4 flex items-center space-x-2`}
+            className={`relative ${
+              selectedDate
+                ? "bg-[#D6EDFF] hover:bg-blue-200 cursor-pointer"
+                : "bg-gray-300 cursor-not-allowed"
+            } rounded-sm p-1 px-4 flex items-center space-x-2`}
             onClick={() => {
               if (selectedDate) setIsModalOpen(true);
             }}
@@ -161,8 +186,9 @@ const Dashboard = () => {
               className={selectedDate ? "text-blue-500" : "text-gray-400"}
             />
             <p
-              className={`font-medium text-[14px] ${selectedDate ? "text-blue-500" : "text-gray-500"
-                }`}
+              className={`font-medium text-[14px] ${
+                selectedDate ? "text-blue-500" : "text-gray-500"
+              }`}
             >
               Adauga Rand
             </p>
@@ -188,30 +214,33 @@ const Dashboard = () => {
           </div>
         ) : (
           <>
-            {
-              isEco ? <div>
+            { selectedTestType === "Ecographie" ? (
+              <div>
                 <EcoTable
-                  appointments={data || []}
-                  onView={handleView}
-                  onEdit={handleEdit}
-                  fetchData={fetchAppointments} />
-              </div>
-                :
-                <TableComponent
+                  timeSlots={timeSlots}
                   appointments={data || []}
                   onView={handleView}
                   onEdit={handleEdit}
                   fetchData={fetchAppointments}
                 />
-            }
+              </div>
+            ) : (
+              <TableComponent
+                appointments={data || []}
+                onView={handleView}
+                onEdit={handleEdit}
+                fetchData={fetchAppointments}
+              />
+            )}
           </>
-
         )}
+
+        <Notes selectedDate={selectedDate} />
       </div>
       <AppointmentAddEdit
         isModalOpen={isModalOpen}
         handleModal={handleModal}
-        isEco={isEco}
+        isEco={selectedTestType === "Ecographie"}
         date={selectedDate}
         location={location}
         fetchAppointments={fetchAppointments}

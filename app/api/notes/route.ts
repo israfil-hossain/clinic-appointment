@@ -1,0 +1,141 @@
+import dbConnect from "@/utils/mongodb";
+import { NextRequest, NextResponse } from "next/server";
+
+import { verifyJWT } from "@/utils/jwtUtils";
+import NotesModel from "@/models/Notes";
+
+
+export async function GET(request: NextRequest) {
+    await dbConnect();
+    
+    // Retrieve query parameters for filters
+    const { searchParams } = new URL(request.url);
+    const date = searchParams.get("date");
+  
+    try {
+      // Validate JWT token
+      const token = request.cookies.get("authToken")?.value;
+      if (!token) {
+        return NextResponse.json(
+          { message: "Authentication required!" },
+          { status: 401 }
+        );
+      }
+  
+      // Decode and verify JWT token
+      const decoded = await verifyJWT(token);
+      if (!decoded) {
+        return NextResponse.json(
+          { message: "Invalid or expired token!" },
+          { status: 401 }
+        );
+      }
+  
+      // Build filter criteria
+      const filter: any = {};
+      if (date) filter.date = new Date(date);
+      // Fetch filtered appointments
+      const appointments = await NotesModel.find(filter).sort({ date: 1 });
+      return NextResponse.json({ success: true, data: appointments }, { status: 200 });
+    } catch (err) {
+      console.error(err);
+      return NextResponse.json({ message: "Server Error" }, { status: 500 });
+    }
+  }
+
+export async function POST(request: NextRequest) {
+  await dbConnect();
+  const { date,notes } = await request.json();
+
+  try {
+    // Validate JWT token
+    const token = request.cookies.get("authToken")?.value;
+    if (!token) {
+      return NextResponse.json(
+        { message: "Authentication required!" },
+        { status: 401 }
+      );
+    }
+
+    // Decode and verify JWT token
+    const decoded = await verifyJWT(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { message: "Invalid or expired token!" },
+        { status: 401 }
+      );
+    }
+
+    // Create new appointment
+    const newNotes = new NotesModel({
+      date,
+      notes,
+    });
+
+    await newNotes.save();
+    return NextResponse.json(
+      { message: "Notes Created Successfully!", data: newNotes },
+      { status: 201 }
+    );
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ message: "Server Error" }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  await dbConnect();
+
+  try {
+    const id = request.nextUrl.searchParams.get("id");
+    if (!id) {
+      return NextResponse.json(
+        { message: "Notes ID is required!" },
+        { status: 400 }
+      );
+    }
+
+    // Parse the request body for updated data
+    const updatedData = await request.json();
+
+    // Validate JWT token
+    const token = request.cookies.get("authToken")?.value;
+    if (!token) {
+      return NextResponse.json(
+        { message: "Authentication required!" },
+        { status: 401 }
+      );
+    }
+
+    // Decode and verify JWT token
+    const decoded = await verifyJWT(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { message: "Invalid or expired token!" },
+        { status: 401 }
+      );
+    }
+
+    // Partially update the appointment by ID
+    const updatedAppointment = await NotesModel.findByIdAndUpdate(
+      id,
+      { $set: updatedData }, // Only update provided fields
+      { new: true, runValidators: true } // Return updated document
+    );
+
+    if (!updatedAppointment) {
+      return NextResponse.json(
+        { message: "Notes not found!" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(
+      { message: "Notes Updated Successfully!", data: updatedAppointment },
+      { status: 200 }
+    );
+  } catch (err) {
+    console.error("Update Error:", err);
+    return NextResponse.json({ message: "Server Error" }, { status: 500 });
+  }
+}
