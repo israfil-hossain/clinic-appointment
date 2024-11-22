@@ -4,48 +4,46 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyJWT } from "@/utils/jwtUtils";
 import NotesModel from "@/models/Notes";
 
-
 export async function GET(request: NextRequest) {
-    await dbConnect();
-    
-    // Retrieve query parameters for filters
-    const { searchParams } = new URL(request.url);
-    const date = searchParams.get("date");
-  
-    try {
-      // Validate JWT token
-      const token = request.cookies.get("authToken")?.value;
-      if (!token) {
-        return NextResponse.json(
-          { message: "Authentication required!" },
-          { status: 401 }
-        );
-      }
-  
-      // Decode and verify JWT token
-      const decoded = await verifyJWT(token);
-      if (!decoded) {
-        return NextResponse.json(
-          { message: "Invalid or expired token!" },
-          { status: 401 }
-        );
-      }
-  
-      // Build filter criteria
-      const filter: any = {};
-      if (date) filter.date = new Date(date);
-      // Fetch filtered appointments
-      const appointments = await NotesModel.find(filter).sort({ date: 1 });
-      return NextResponse.json({ success: true, data: appointments }, { status: 200 });
-    } catch (err) {
-      console.error(err);
-      return NextResponse.json({ message: "Server Error" }, { status: 500 });
+  await dbConnect();
+
+  const { searchParams } = new URL(request.url);
+  const date = searchParams.get("date");
+  const location = searchParams.get("location");
+
+  try {
+    const token = request.cookies.get("authToken")?.value;
+    if (!token) {
+      return NextResponse.json(
+        { message: "Authentication required!" },
+        { status: 401 }
+      );
     }
+
+    const decoded = await verifyJWT(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { message: "Invalid or expired token!" },
+        { status: 401 }
+      );
+    }
+
+    const filter: any = {};
+    if (date) filter.date = new Date(date);
+    if (location) filter.location = location;
+
+    const notes = await NotesModel.find(filter).sort({ date: 1 });
+    return NextResponse.json({ success: true, data: notes }, { status: 200 });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ message: "Server Error" }, { status: 500 });
   }
+}
 
 export async function POST(request: NextRequest) {
   await dbConnect();
-  const { date,notes } = await request.json();
+  const { date, notes, location } = await request.json();
+  console.log("date", date, "notes: ", notes, "location", location)
 
   try {
     // Validate JWT token
@@ -66,11 +64,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create new appointment
+    // Create new note with location
     const newNotes = new NotesModel({
       date,
       notes,
+      location,
     });
+
+    console.log("Notes : ",newNotes )
 
     await newNotes.save();
     return NextResponse.json(
@@ -82,6 +83,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: "Server Error" }, { status: 500 });
   }
 }
+
 
 export async function PATCH(request: NextRequest) {
   await dbConnect();
@@ -95,10 +97,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // Parse the request body for updated data
     const updatedData = await request.json();
-
-    // Validate JWT token
     const token = request.cookies.get("authToken")?.value;
     if (!token) {
       return NextResponse.json(
@@ -107,7 +106,6 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // Decode and verify JWT token
     const decoded = await verifyJWT(token);
     if (!decoded) {
       return NextResponse.json(
@@ -116,14 +114,13 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // Partially update the appointment by ID
-    const updatedAppointment = await NotesModel.findByIdAndUpdate(
+    const updatedNotes = await NotesModel.findByIdAndUpdate(
       id,
-      { $set: updatedData }, // Only update provided fields
-      { new: true, runValidators: true } // Return updated document
+      { $set: updatedData },
+      { new: true, runValidators: true }
     );
 
-    if (!updatedAppointment) {
+    if (!updatedNotes) {
       return NextResponse.json(
         { message: "Notes not found!" },
         { status: 404 }
@@ -131,7 +128,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { message: "Notes Updated Successfully!", data: updatedAppointment },
+      { message: "Notes Updated Successfully!", data: updatedNotes },
       { status: 200 }
     );
   } catch (err) {

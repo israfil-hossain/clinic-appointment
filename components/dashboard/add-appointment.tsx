@@ -21,7 +21,6 @@ import utc from "dayjs/plugin/utc";
 import dayjs from "dayjs";
 import { useTimeSlotStore } from "@/store/timeStore";
 
-
 dayjs.extend(utc);
 
 interface Appointment {
@@ -138,7 +137,6 @@ export default function AppointmentAddEdit({
           },
         }
       );
-
     } catch (error) {
       console.error("Error updating appointment:", error);
       toast.error("An error occurred while updating the appointment");
@@ -149,7 +147,7 @@ export default function AppointmentAddEdit({
     <div className="w-full overflow-auto">
       <div className="mb-4">
         <Dialog open={isModalOpen} onOpenChange={handleModal}>
-          <DialogContent className="sm:max-w-[425px] min-w-[600px]">
+          <DialogContent className=" min-w-[400px] max-w-[600px] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {data ? "Update" : "Add"} New Appointment For{" "}
@@ -162,7 +160,7 @@ export default function AppointmentAddEdit({
                 time: data?.time || "",
                 patientName: data?.patientName || "",
                 patientSurname: data?.patientSurname || "",
-                testType: isEco ? "Ecographie" : data?.testType || "",
+                testType: isEco ? "Ecografie" : data?.testType || "",
                 phoneNumber: data?.phoneNumber || "",
                 notes: data?.notes || "",
                 doctorName: isEco ? "-" : data?.doctorName || "",
@@ -205,7 +203,7 @@ export default function AppointmentAddEdit({
                   </div>
 
                   <div>
-                    <Label htmlFor="testType">Tip Ecografie</Label>
+                    <Label htmlFor="testType">Department</Label>
                     {isEco ? (
                       <Field name="testType" as={Input} id="testType" />
                     ) : (
@@ -222,7 +220,7 @@ export default function AppointmentAddEdit({
                         value={values.testType}
                         className="block w-full p-2 border border-gray-300 rounded"
                       >
-                        <option value="">Select a Tip Ecografie</option>
+                        <option value="">Select Department</option>
                         {departmentsData.map((dept) => (
                           <option key={dept.name} value={dept.name}>
                             {dept.name}
@@ -282,11 +280,18 @@ export default function AppointmentAddEdit({
                   <div className="w-full flex space-x-5">
                     {isEco ? (
                       <>
-                        <div>
-                          <Label htmlFor="time">Time</Label>
-                          <Field as="select" name="time" id="time">
+                        <div className="flex flex-col ">
+                          <Label htmlFor="time" className="pb-3">
+                            Time
+                          </Label>
+                          <Field
+                            as="select"
+                            name="time"
+                            id="time"
+                            className="border py-2 rounded-lg "
+                          >
                             <option value="">Select a time</option>
-                            {timeSlots.map((slot:any) => (
+                            {timeSlots.map((slot: any) => (
                               <option key={slot} value={slot}>
                                 {slot}
                               </option>
@@ -307,6 +312,7 @@ export default function AppointmentAddEdit({
                       </div>
                     )}
 
+                   
                     <div>
                       <Label>Location</Label>
                       <div

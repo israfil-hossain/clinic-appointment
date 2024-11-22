@@ -22,6 +22,7 @@ export interface Appointment {
 export interface Notes{
   date: Date;
   notes: string; 
+  location: string; 
   createdAt?: Date;
 }
 

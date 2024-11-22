@@ -132,15 +132,15 @@ const Dashboard = () => {
         <div className="w-full bg-white grid lg:grid-cols-5 md:grid-cols-3 grid-cols-2 gap-3 p-5">
           <div
             className={`cursor-pointer flex justify-center items-center px-4 py-1 text-white text-[15px] font-medium rounded-md  text-center ${
-              selectedTestType === "Ecographie"
+              selectedTestType === "Ecografie"
                 ? "bg-green-500"
                 : "bg-indigo-500 hover:bg-green-500"
             }`}
             onClick={() => {
-              handleTestTypeSelection("Ecographie");
+              handleTestTypeSelection("Ecografie");
             }}
           >
-            Ecography
+            Ecografie
           </div>
 
           {departmentsData?.map((item, index) => (
@@ -214,7 +214,7 @@ const Dashboard = () => {
           </div>
         ) : (
           <>
-            { selectedTestType === "Ecographie" ? (
+            { selectedTestType === "Ecografie" ? (
               <div>
                 <EcoTable
                   timeSlots={timeSlots}
@@ -235,12 +235,12 @@ const Dashboard = () => {
           </>
         )}
 
-        <Notes selectedDate={selectedDate} />
+        <Notes selectedDate={selectedDate} location={location} />
       </div>
       <AppointmentAddEdit
         isModalOpen={isModalOpen}
         handleModal={handleModal}
-        isEco={selectedTestType === "Ecographie"}
+        isEco={selectedTestType === "Ecografie"}
         date={selectedDate}
         location={location}
         fetchAppointments={fetchAppointments}
