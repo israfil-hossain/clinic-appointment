@@ -85,7 +85,9 @@ const EcoTable: React.FC<TableComponentProps> = ({
             const appointment = appointmentsMap.get(normalizeTime(timeSlot)); // Use normalized time to fetch appointment
             
               return (
-                <tr key={timeSlot} className="bg-white">
+                <tr key={timeSlot} className={`${
+                  appointment && appointment.isConfirmed === true ? "bg-red-200" : "bg-white"
+                } transition-colors `}>
                   <td className="border border-gray-200 px-4 py-2 text-gray-700">{timeSlot}</td>
                   <td className="border border-gray-200 px-4 py-2 text-gray-700">
                     {appointment ? appointment.patientName : "-"}

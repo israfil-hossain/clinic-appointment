@@ -26,19 +26,18 @@ const Dashboard = () => {
   const [editData, setEditData] = useState<any>(null);
   const [data, setAppointments] = useState<any>(null);
   const [selectedTestType, setSelectedTestType] = useState<string | null>(null);
-  const { setTimeSlots,timeSlots } = useTimeSlotStore();
+  const { setTimeSlots, timeSlots } = useTimeSlotStore();
 
   const handleModal = () => {
     setIsModalOpen(false);
     setEditData(null);
   };
- 
-  // Map the Normal Day with Romania Day name ... 
+
+  // Map the Normal Day with Romania Day name ...
   const selectDay =
     selectedDate?.format("dddd") && dayNameMap[selectedDate?.format("dddd")];
 
-  
-  // Get The Appointments by API Calling .... 
+  // Get The Appointments by API Calling ....
   const fetchAppointments = async () => {
     try {
       setIsLoading(true);
@@ -70,10 +69,63 @@ const Dashboard = () => {
     fetchAppointments();
   }, [selectedDate, location, selectedTestType]);
 
+  // Handle The Tab Selection ...
+  const handleTestTypeSelection = (testType: string) => {
+    setSelectedTestType(testType);
+    TestTypeSelectedRefresh(testType); 
+  };
+
+  // Persist selectedTestType in local storage
+  useEffect(() => {
+    const savedTestType = localStorage.getItem("selectedTestType");
+    if (savedTestType) {
+      setSelectedTestType(savedTestType);
+    }
+  }, []);
+
+  const TestTypeSelectedRefresh = (testType: string | null) => {
+    if (testType) {
+      localStorage.setItem("selectedTestType", testType);
+    } else {
+      localStorage.removeItem("selectedTestType");
+    }
+  };
+
+  // According to Location and Day Name Get the timeSlots....
+  const fetchTimeSlots = () => {
+    if (location && selectDay) {
+      const slots = getTimeSlotsByLocationAndDay(location, selectDay);
+
+      // Merge slots with API times if `data` exists
+      const apiTimes =
+        data?.length > 0
+          ? data.map((item: any) => item.time).filter(Boolean)
+          : [];
+
+      // Merge and deduplicate time slots
+      const uniqueTimes = Array.from(new Set([...slots, ...apiTimes]));
+
+      // Set the time slots
+      setTimeSlots(uniqueTimes);
+    } else {
+      console.warn("Location or selectDay is missing.");
+      setTimeSlots([]); // Clear slots if no valid location/day
+    }
+  };
+
+  // For EcoTable Fetch The Time Slot Initiallly when select Ecografie Tab ...
+  useEffect(() => {
+    if (selectedTestType === "Ecografie" && selectedDate) {
+      fetchTimeSlots();
+    }
+  }, [location, selectDay, selectedTestType, selectedDate, data]);
+
+  // Table View Function ....
   const handleView = (appointment: any) => {
     alert(`Viewing appointment for ${appointment.name} ${appointment.surname}`);
   };
 
+  // Table Edit Function ...
   const handleEdit = async (appointment: any) => {
     if (!selectedDate) {
       alert(`Please Select Date. `);
@@ -83,18 +135,14 @@ const Dashboard = () => {
     }
   };
 
-  // Handle The Tab Selection ... 
-  const handleTestTypeSelection = (testType: string) => {
-    setSelectedTestType(testType);
-  };
-
+  // Reset Function ... 
   const handleReset = () => {
     setSelectedTestType(null);
     setLocation("Oradea");
     setSelectedDate(dayjs());
   };
 
-  // Handle PDF Download Function ... 
+  // Handle PDF Download Function ...
   const handleDownloadPDF = () => {
     generatePDF({
       data,
@@ -103,18 +151,6 @@ const Dashboard = () => {
       date: selectedDate?.format("D MMMM YYYY"),
     });
   };
-
-  // According to Location and Day Name Get the timeSlots.... 
-  const fetchTimeSlots = () => {
-    if (location && selectDay) {
-      const slots = getTimeSlotsByLocationAndDay(location, selectDay);
-      setTimeSlots(slots);
-    }
-  };
-
-  useEffect(() => {
-    fetchTimeSlots();
-  }, [location, selectDay]);
 
   return (
     <div className="flex flex-col items-center justify-start  bg-gray-200 py-5">
@@ -214,7 +250,7 @@ const Dashboard = () => {
           </div>
         ) : (
           <>
-            { selectedTestType === "Ecografie" ? (
+            {selectedTestType === "Ecografie" ? (
               <div>
                 <EcoTable
                   timeSlots={timeSlots}

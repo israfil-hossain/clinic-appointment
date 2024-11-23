@@ -13,8 +13,6 @@ const Notes: React.FC<NotesProps> = ({ selectedDate, location }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [noteId, setNoteId] = useState<string | null>(null);
 
-  console.log("Location : ", location); 
-
   const fetchNotes = async (date: string, location: string) => {
     try {
       setIsLoading(true);

@@ -6,13 +6,11 @@ import * as Yup from "yup";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { departmentsData, locations } from "@/lib/department";
 import axios from "axios";
@@ -20,6 +18,7 @@ import toast from "react-hot-toast";
 import utc from "dayjs/plugin/utc";
 import dayjs from "dayjs";
 import { useTimeSlotStore } from "@/store/timeStore";
+import { Switch } from "@/components/ui/switch";
 
 dayjs.extend(utc);
 
@@ -147,7 +146,7 @@ export default function AppointmentAddEdit({
     <div className="w-full overflow-auto">
       <div className="mb-4">
         <Dialog open={isModalOpen} onOpenChange={handleModal}>
-          <DialogContent className=" min-w-[400px] max-w-[600px] overflow-y-auto">
+          <DialogContent className=" min-w-[400px] max-w-[600px]  max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {data ? "Update" : "Add"} New Appointment For{" "}
@@ -156,6 +155,7 @@ export default function AppointmentAddEdit({
             </DialogHeader>
             <Formik
               initialValues={{
+                timeType: "select",
                 date: data?.date || formattedDate,
                 time: data?.time || "",
                 patientName: data?.patientName || "",
@@ -165,7 +165,7 @@ export default function AppointmentAddEdit({
                 notes: data?.notes || "",
                 doctorName: isEco ? "-" : data?.doctorName || "",
                 location: data?.location || location,
-                isConfirmed: data?.isConfirmed || true,
+                isConfirmed: data?.isConfirmed ?? true,
               }}
               validationSchema={AppointmentSchema}
               onSubmit={handleAddOrUpdateAppointment}
@@ -279,16 +279,47 @@ export default function AppointmentAddEdit({
 
                   <div className="w-full flex space-x-5">
                     {isEco ? (
-                      <>
-                        <div className="flex flex-col ">
-                          <Label htmlFor="time" className="pb-3">
-                            Time
-                          </Label>
+                      <div>
+                        <Label htmlFor="time" className="pb-3">
+                          Time
+                        </Label>
+                        <div className="flex items-center space-x-3">
+                          {/* Time Type Selection */}
+                          <label className="flex items-center">
+                            <Field
+                              type="radio"
+                              name="timeType"
+                              value="select"
+                              onChange={() => {
+                                setFieldValue("timeType", "select");
+                                setFieldValue("time", ""); // Reset time value
+                              }}
+                              checked={values.timeType === "select"}
+                            />
+                            <span className="ml-2">Select Time</span>
+                          </label>
+                          <label className="flex items-center">
+                            <Field
+                              type="radio"
+                              name="timeType"
+                              value="custom"
+                              onChange={() => {
+                                setFieldValue("timeType", "custom");
+                                setFieldValue("time", ""); // Reset time value
+                              }}
+                              checked={values.timeType === "custom"}
+                            />
+                            <span className="ml-2">Custom Time</span>
+                          </label>
+                        </div>
+
+                        {/* Time Input */}
+                        {values.timeType === "select" ? (
                           <Field
                             as="select"
                             name="time"
                             id="time"
-                            className="border py-2 rounded-lg "
+                            className="border py-2 rounded-lg mt-2 w-full"
                           >
                             <option value="">Select a time</option>
                             {timeSlots.map((slot: any) => (
@@ -297,11 +328,22 @@ export default function AppointmentAddEdit({
                               </option>
                             ))}
                           </Field>
-                          {errors.time && touched.time && (
-                            <div className="text-red-500">{errors.time}</div>
-                          )}
-                        </div>
-                      </>
+                        ) : (
+                          <Field
+                            name="time"
+                            type="time"
+                            as={Input}
+                            id="time"
+                            className="mt-2 w-full"
+                            onChange={(
+                              e: React.ChangeEvent<HTMLInputElement>
+                            ) => setFieldValue("time", e.target.value)}
+                          />
+                        )}
+                        {errors.time && touched.time && (
+                          <div className="text-red-500">{errors.time}</div>
+                        )}
+                      </div>
                     ) : (
                       <div className="w-32">
                         <Label htmlFor="time">Time</Label>
@@ -312,7 +354,6 @@ export default function AppointmentAddEdit({
                       </div>
                     )}
 
-                   
                     <div>
                       <Label>Location</Label>
                       <div
@@ -344,6 +385,21 @@ export default function AppointmentAddEdit({
                       id="notes"
                       className="block w-full p-2 border border-gray-300 rounded"
                     />
+                  </div>
+
+                  <div className="flex items-center space-x-4">
+                    <Label htmlFor="isConfirmed">Is Confirmed</Label>
+                    <Field name="isConfirmed">
+                      {({ field, form }: { field: any; form: any }) => (
+                        <Switch
+                          id="isConfirmed"
+                          checked={field.value}
+                          onCheckedChange={(checked: boolean) =>
+                            form.setFieldValue("isConfirmed", checked)
+                          }
+                        />
+                      )}
+                    </Field>
                   </div>
 
                   <div className="flex space-x-5">
