@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build && npm run seed",
+    "build": "next build && yarn run seed",
     "start": "next start",
     "lint": "next lint",
     "seed": "node seed/index.js"
