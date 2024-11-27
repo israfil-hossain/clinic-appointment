@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'; 
 
-const MONGO_URI  = process.env.MONGO_URI || "mongodb://admin:admin123@81.196.46.41:27017/clinicdb?authSource=admin"; 
+const MONGO_URI  = process.env.MONGO_URI; 
 
 if(!MONGO_URI){
     throw new Error("Please define MONGO_URI environment"); 

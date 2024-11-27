@@ -8,8 +8,8 @@ const createUser = async () => {
 
   const userData = {
     username: "Admin",
-    email: "admin@gmail.com",
-    password: "123456",
+    email: "receptie@policlinicamos.ro",
+    password: "Martie1967*",
     accessSection: "all",
     role: "admin",
   };

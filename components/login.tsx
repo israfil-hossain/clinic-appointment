@@ -64,9 +64,6 @@ const SignIn = () => {
         <h2 className="text-2xl font-bold text-center text-gray-800">
           Sign In
         </h2>
-        <p className="text-sm text-red-500 ">
-          Test Email : admin@gmail.com <br /> Test Password : 123456
-        </p>
 
         <Formik
           initialValues={{ email: "", password: "" }}
