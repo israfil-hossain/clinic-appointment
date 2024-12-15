@@ -1,24 +1,25 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store/store";
-import { isTokenExpired } from "@/utils/isTokenExpire";
 import Cookies from "js-cookie";
 
 export const useAuthEffect = () => {
-  const {clearUser} = useUserStore();
+  const { clearUser } = useUserStore();
   const router = useRouter();
 
   useEffect(() => {
-    const checkAuthToken = async () => {
+    const checkAuthToken = () => {
       const token = Cookies.get("authToken");
       if (token) {
-        const expired = await isTokenExpired(token);
-        if (expired) {
+        // You might want to decode the token or check its expiry manually if needed
+        const expirationDate = JSON.parse(atob(token.split(".")[1])).exp;
+        if (expirationDate * 1000 < Date.now()) {
           clearUser();
           Cookies.remove("authToken");
           router.push("/");
         }
       } else {
+        // If there's no token, just redirect to the login page
         router.push("/");
       }
     };

@@ -17,15 +17,17 @@ import Notes from "./Notes";
 import { getTimeSlotsByLocationAndDay } from "@/lib/timeSlots";
 import { useTimeSlotStore } from "@/store/timeStore";
 
+
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<dayjs.Dayjs | null>(dayjs());
-  const [location, setLocation] = useState("Oradea");
+  const [location, setLocation] = useState("Beiuș");
   const [dayName, setDayName] = useState("");
   const [editData, setEditData] = useState<any>(null);
   const [data, setAppointments] = useState<any>(null);
   const [selectedTestType, setSelectedTestType] = useState<string | null>(null);
+  const [textareaContent, setTextareaContent] = useState<string>("");
   const { setTimeSlots, timeSlots } = useTimeSlotStore();
 
   const handleModal = () => {
@@ -72,7 +74,7 @@ const Dashboard = () => {
   // Handle The Tab Selection ...
   const handleTestTypeSelection = (testType: string) => {
     setSelectedTestType(testType);
-    TestTypeSelectedRefresh(testType); 
+    TestTypeSelectedRefresh(testType);
   };
 
   // Persist selectedTestType in local storage
@@ -102,11 +104,11 @@ const Dashboard = () => {
           ? data.map((item: any) => item.time).filter(Boolean)
           : [];
 
-      // Merge and deduplicate time slots
-      const uniqueTimes = Array.from(new Set([...slots, ...apiTimes]));
+      // Instead of using Set, concatenate all the times
+      const mergedTimes = [...slots, ...apiTimes];
 
       // Set the time slots
-      setTimeSlots(uniqueTimes);
+      setTimeSlots(mergedTimes);
     } else {
       console.warn("Location or selectDay is missing.");
       setTimeSlots([]); // Clear slots if no valid location/day
@@ -135,22 +137,23 @@ const Dashboard = () => {
     }
   };
 
-  // Reset Function ... 
+  // Reset Function ...
   const handleReset = () => {
     setSelectedTestType(null);
     setLocation("Oradea");
     setSelectedDate(dayjs());
   };
 
-  // Handle PDF Download Function ...
   const handleDownloadPDF = () => {
     generatePDF({
       data,
       location,
       day: selectDay,
       date: selectedDate?.format("D MMMM YYYY"),
+      notes: textareaContent
     });
   };
+
 
   return (
     <div className="flex flex-col items-center justify-start  bg-gray-200 py-5">
@@ -237,12 +240,14 @@ const Dashboard = () => {
             )}
           </div>
 
+          
           <button
             className="bg-blue-500 hover:bg-blue-400 text-white rounded px-4 py-1"
             onClick={handleDownloadPDF}
           >
             Download PDF
           </button>
+            
         </div>
         {isLoading ? (
           <div className="py-5 bg-slate-200 rounded-md mt-5 h-28 w-[100%]">
@@ -271,7 +276,7 @@ const Dashboard = () => {
           </>
         )}
 
-        <Notes selectedDate={selectedDate} location={location} />
+        <Notes selectedDate={selectedDate} location={location} textareaContent={textareaContent} setTextareaContent={setTextareaContent}  />
       </div>
       <AppointmentAddEdit
         isModalOpen={isModalOpen}
@@ -282,6 +287,7 @@ const Dashboard = () => {
         fetchAppointments={fetchAppointments}
         data={editData ? editData : null}
       />
+      
     </div>
   );
 };

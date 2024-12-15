@@ -4,8 +4,8 @@ import Navbar from "@/components/nav-bar";
 import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
-  title: "Clinic",
-  description: "Appointment Schedule for Clinic",
+  title: "Programari Policlinica Mos",
+  description: "Programari Policlinica Mos",
 };
 
 export default function RootLayout({

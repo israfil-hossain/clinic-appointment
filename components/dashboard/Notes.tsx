@@ -6,12 +6,15 @@ import toast from "react-hot-toast";
 interface NotesProps {
   selectedDate: dayjs.Dayjs | null;
   location: string;
+  textareaContent:string; 
+  setTextareaContent:any;
 }
 
-const Notes: React.FC<NotesProps> = ({ selectedDate, location }) => {
-  const [textareaContent, setTextareaContent] = useState<string>("");
+const Notes: React.FC<NotesProps> = ({ selectedDate, location,textareaContent,setTextareaContent }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [noteId, setNoteId] = useState<string | null>(null);
+
+  console.log("Location : ", location) ;
 
   const fetchNotes = async (date: string, location: string) => {
     try {
@@ -20,6 +23,8 @@ const Notes: React.FC<NotesProps> = ({ selectedDate, location }) => {
         params: { date, location },
         withCredentials: true,
       });
+
+      console.log("Notes : ",response)
 
       if (response.data?.success && response.data.data.length > 0) {
         const note = response.data.data[0];
@@ -66,7 +71,7 @@ const Notes: React.FC<NotesProps> = ({ selectedDate, location }) => {
           `/api/notes`,
           {
             date: selectedDate?.format("YYYY-MM-DD"),
-            location:"Oradea",
+            location:location,
             notes: textareaContent,
           },
           { withCredentials: true }
