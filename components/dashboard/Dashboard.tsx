@@ -160,13 +160,13 @@ const Dashboard = () => {
       <div className="w-full max-w-7xl p-5 space-y-4 bg-gray-100 rounded-md shadow-md py-5 ">
         <div className="flex justify-between ">
           <p>Lista departamentului :</p>
-          <div
+          {/* <div
             className="flex space-x-2 items-center cursor-pointer hover:shadow-md bg-red-200 hover:bg-red-400 hover:text-white px-3 py-2 rounded "
             onClick={handleReset}
           >
             <X size={18} />
             <p>Clear</p>
-          </div>
+          </div> */}
         </div>
         <div className="w-full bg-white grid lg:grid-cols-5 md:grid-cols-3 grid-cols-2 gap-3 p-5">
           <div
