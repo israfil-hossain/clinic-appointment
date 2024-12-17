@@ -41,7 +41,7 @@ const SignIn = () => {
         toast.error(response.statusText || "Something went wrong!");
       }
     } catch (err) {
-      console.log(err);
+      console.error(err);
       toast.error("Something went wrong !");
     }
     finally {

@@ -14,8 +14,6 @@ const Notes: React.FC<NotesProps> = ({ selectedDate, location,textareaContent,se
   const [isLoading, setIsLoading] = useState(false);
   const [noteId, setNoteId] = useState<string | null>(null);
 
-  console.log("Location : ", location) ;
-
   const fetchNotes = async (date: string, location: string) => {
     try {
       setIsLoading(true);
@@ -23,8 +21,6 @@ const Notes: React.FC<NotesProps> = ({ selectedDate, location,textareaContent,se
         params: { date, location },
         withCredentials: true,
       });
-
-      console.log("Notes : ",response)
 
       if (response.data?.success && response.data.data.length > 0) {
         const note = response.data.data[0];

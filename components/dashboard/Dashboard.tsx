@@ -17,7 +17,6 @@ import Notes from "./Notes";
 import { getTimeSlotsByLocationAndDay } from "@/lib/timeSlots";
 import { useTimeSlotStore } from "@/store/timeStore";
 
-
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -77,14 +76,6 @@ const Dashboard = () => {
     TestTypeSelectedRefresh(testType);
   };
 
-  // Persist selectedTestType in local storage
-  useEffect(() => {
-    const savedTestType = localStorage.getItem("selectedTestType");
-    if (savedTestType) {
-      setSelectedTestType(savedTestType);
-    }
-  }, []);
-
   const TestTypeSelectedRefresh = (testType: string | null) => {
     if (testType) {
       localStorage.setItem("selectedTestType", testType);
@@ -97,21 +88,13 @@ const Dashboard = () => {
   const fetchTimeSlots = () => {
     if (location && selectDay) {
       const slots = getTimeSlotsByLocationAndDay(location, selectDay);
-
-      // Merge slots with API times if `data` exists
-      const apiTimes =
-        data?.length > 0
-          ? data.map((item: any) => item.time).filter(Boolean)
-          : [];
-
-      // Instead of using Set, concatenate all the times
-      const mergedTimes = [...slots, ...apiTimes];
-
-      // Set the time slots
+      const apiTimes = data?.map((item: any) => item?.time).filter(Boolean) || [];
+  
+      const mergedTimes = Array.from(new Set([...slots, ...apiTimes]));
       setTimeSlots(mergedTimes);
     } else {
       console.warn("Location or selectDay is missing.");
-      setTimeSlots([]); // Clear slots if no valid location/day
+      setTimeSlots([]);
     }
   };
 
@@ -121,6 +104,14 @@ const Dashboard = () => {
       fetchTimeSlots();
     }
   }, [location, selectDay, selectedTestType, selectedDate, data]);
+
+  // Persist selectedTestType in local storage
+  useEffect(() => {
+    const savedTestType = localStorage.getItem("selectedTestType");
+    if (savedTestType) {
+      setSelectedTestType(savedTestType);
+    }
+  }, []);
 
   // Table View Function ....
   const handleView = (appointment: any) => {
@@ -137,36 +128,22 @@ const Dashboard = () => {
     }
   };
 
-  // Reset Function ...
-  const handleReset = () => {
-    setSelectedTestType(null);
-    setLocation("Oradea");
-    setSelectedDate(dayjs());
-  };
-
+  // handle Download function
   const handleDownloadPDF = () => {
     generatePDF({
       data,
       location,
       day: selectDay,
       date: selectedDate?.format("D MMMM YYYY"),
-      notes: textareaContent
+      notes: textareaContent,
     });
   };
-
 
   return (
     <div className="flex flex-col items-center justify-start  bg-gray-200 py-5">
       <div className="w-full max-w-7xl p-5 space-y-4 bg-gray-100 rounded-md shadow-md py-5 ">
         <div className="flex justify-between ">
           <p>Lista departamentului :</p>
-          {/* <div
-            className="flex space-x-2 items-center cursor-pointer hover:shadow-md bg-red-200 hover:bg-red-400 hover:text-white px-3 py-2 rounded "
-            onClick={handleReset}
-          >
-            <X size={18} />
-            <p>Clear</p>
-          </div> */}
         </div>
         <div className="w-full bg-white grid lg:grid-cols-5 md:grid-cols-3 grid-cols-2 gap-3 p-5">
           <div
@@ -240,14 +217,12 @@ const Dashboard = () => {
             )}
           </div>
 
-          
           <button
             className="bg-blue-500 hover:bg-blue-400 text-white rounded px-4 py-1"
             onClick={handleDownloadPDF}
           >
             Download PDF
           </button>
-            
         </div>
         {isLoading ? (
           <div className="py-5 bg-slate-200 rounded-md mt-5 h-28 w-[100%]">
@@ -276,7 +251,12 @@ const Dashboard = () => {
           </>
         )}
 
-        <Notes selectedDate={selectedDate} location={location} textareaContent={textareaContent} setTextareaContent={setTextareaContent}  />
+        <Notes
+          selectedDate={selectedDate}
+          location={location}
+          textareaContent={textareaContent}
+          setTextareaContent={setTextareaContent}
+        />
       </div>
       <AppointmentAddEdit
         isModalOpen={isModalOpen}
@@ -287,7 +267,6 @@ const Dashboard = () => {
         fetchAppointments={fetchAppointments}
         data={editData ? editData : null}
       />
-      
     </div>
   );
 };

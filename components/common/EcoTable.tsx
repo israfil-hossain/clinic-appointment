@@ -1,5 +1,11 @@
 import { Edit, Trash } from "lucide-react";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
 import { Button } from "./button";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -7,6 +13,7 @@ import { useState } from "react";
 
 interface Appointment {
   _id: string;
+  date: string;
   time: string;
   patientName: string;
   patientSurname: string;
@@ -18,16 +25,12 @@ interface Appointment {
 }
 
 interface TableComponentProps {
-  timeSlots: string[]; // Changed to an array of strings
+  timeSlots: string[];
   appointments: Appointment[];
   onView: (appointment: Appointment) => void;
   onEdit: (appointment: Appointment) => void;
   fetchData: () => void;
 }
-
-const normalizeTime = (time: string) => {
-  return time.padStart(5, "0"); // Normalize to "08:30" format, for example
-};
 
 const EcoTable: React.FC<TableComponentProps> = ({
   timeSlots,
@@ -39,13 +42,23 @@ const EcoTable: React.FC<TableComponentProps> = ({
   const [appointmentToDelete, setAppointmentToDelete] =
     useState<Appointment | null>(null);
 
-  // Sort the time slots in ascending order (by time)
-  const sortedTimeSlots = [...timeSlots].sort((a, b) => normalizeTime(a).localeCompare(normalizeTime(b)));
+  // Normalize the time for sorting
+  const normalizeTime = (time: string) => {
+    return time.padStart(5, "0"); // Normalize to "08:30" format, for example
+  };
 
-  // Convert appointments array to an object for easy lookup
-  const appointmentsMap = new Map(
-    appointments.map((appt) => [normalizeTime(appt.time), appt]) // normalize time here
+  // Sort the time slots in ascending order
+  const sortedTimeSlots = [...timeSlots].sort((a, b) =>
+    normalizeTime(a).localeCompare(normalizeTime(b))
   );
+
+  // Group appointments by timeSlot
+  const appointmentsGroupedByTime = sortedTimeSlots.map((timeSlot) => ({
+    timeSlot,
+    appointments: appointments.filter(
+      (appt) => normalizeTime(appt.time) === normalizeTime(timeSlot)
+    ),
+  }));
 
   const confirmDelete = (appointment: Appointment) => {
     setAppointmentToDelete(appointment);
@@ -55,7 +68,7 @@ const EcoTable: React.FC<TableComponentProps> = ({
   const handleConfirm = async () => {
     if (appointmentToDelete) {
       try {
-        await axios.delete(`/api/appointments?id=${appointmentToDelete?._id}`);
+        await axios.delete(`/api/appointments?id=${appointmentToDelete._id}`);
         toast.success("Appointment Deleted Successfully!");
         fetchData();
       } catch (err) {
@@ -72,67 +85,82 @@ const EcoTable: React.FC<TableComponentProps> = ({
       <table className="w-full text-sm">
         <thead>
           <tr className="bg-white">
-            <th className="border border-gray-200 px-4 py-2 text-left font-medium">Timp prezent</th>
-            <th className="border border-gray-200 px-4 py-2 text-left font-medium">Nume</th>
-            <th className="border border-gray-200 px-4 py-2 text-left font-medium">Prenume</th>
-            <th className="border border-gray-200 px-4 py-2 text-left font-medium">Department</th>
-            <th className="border border-gray-200 px-4 py-2 text-left font-medium">Telefon</th>
-            <th className="border border-gray-200 px-4 py-2 text-left font-medium">Doctor</th>
-            <th className="border border-gray-200 px-4 py-2 text-left font-medium w-52">Notes</th>
-            <th className="border border-gray-200 px-4 py-2 text-left font-medium">Actions</th>
+            <th className="border border-gray-200 px-4 py-2 text-left font-medium">
+              Time
+            </th>
+            <th className="border border-gray-200 px-4 py-2 text-left font-medium">
+              Name
+            </th>
+            <th className="border border-gray-200 px-4 py-2 text-left font-medium">
+              Surname
+            </th>
+            <th className="border border-gray-200 px-4 py-2 text-left font-medium">
+              Department
+            </th>
+            <th className="border border-gray-200 px-4 py-2 text-left font-medium">
+              Phone
+            </th>
+            <th className="border border-gray-200 px-4 py-2 text-left font-medium">
+              Doctor
+            </th>
+            <th className="border border-gray-200 px-4 py-2 text-left font-medium w-52">
+              Notes
+            </th>
+            <th className="border border-gray-200 px-4 py-2 text-left font-medium">
+              Actions
+            </th>
           </tr>
         </thead>
         <tbody>
-          {sortedTimeSlots.map((timeSlot,index) => {
-            const appointment = appointmentsMap.get(normalizeTime(timeSlot));
-
-            return (
-              <tr
-               key={`${timeSlot}-${index}`}
-                className={`${
-                  appointment && appointment.isConfirmed === true
-                    ? "bg-red-200"
-                    : "bg-white"
-                } transition-colors `}
-              >
-                <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                  {timeSlot}
-                </td>
-                <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                  {appointment ? appointment.patientName : "-"}
-                </td>
-                <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                  {appointment ? appointment.patientSurname : "-"}
-                </td>
-                <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                  {appointment ? appointment.testType : "-"}
-                </td>
-                <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                  {appointment ? appointment.phoneNumber : "-"}
-                </td>
-                <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                  {appointment ? appointment.doctorName : "-"}
-                </td>
-                <td className="border border-gray-200 px-4 py-2 text-gray-700 text-[12px] text-wrap overflow-x-auto">
-                  {appointment ? appointment.notes : "-"}
-                </td>
-                <td className="border border-gray-200 px-4 py-2 flex space-x-2">
-                  <button
-                    onClick={() => appointment && onEdit(appointment)}
-                    className="text-blue-500"
-                  >
-                    <Edit size={20} />
-                  </button>
-                  <button
-                    onClick={() => appointment && confirmDelete(appointment)}
-                    className="text-red-500"
-                  >
-                    <Trash size={20} />
-                  </button>
-                </td>
-              </tr>
-            );
-          })}
+          {appointmentsGroupedByTime.map(({ timeSlot, appointments }) => (
+            <>
+              {appointments.map((appointment, index) => (
+                <tr
+                  key={appointment._id}
+                  className={`${
+                    appointment.isConfirmed ? "bg-red-200" : "bg-white"
+                  } transition-colors`}
+                >
+                  {/* Show timeSlot only for the first appointment in the group */}
+                  <td className="border border-gray-200 px-4 py-2 text-gray-700">
+                    {index === 0 ? timeSlot : ""}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2 text-gray-700">
+                    {appointment.patientName}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2 text-gray-700">
+                    {appointment.patientSurname}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2 text-gray-700">
+                    {appointment.testType}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2 text-gray-700">
+                    {appointment.phoneNumber}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2 text-gray-700">
+                    {appointment.doctorName}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2 text-gray-700 text-[12px] text-wrap overflow-x-auto">
+                    {appointment.notes || "-"}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2 flex space-x-2">
+                    <button
+                      onClick={() => onEdit(appointment)}
+                      className="text-blue-500"
+                    >
+                      <Edit size={20} />
+                    </button>
+                    <button
+                      onClick={() => confirmDelete(appointment)}
+                      className="text-red-500"
+                    >
+                      <Trash size={20} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </>
+          ))}
         </tbody>
       </table>
 

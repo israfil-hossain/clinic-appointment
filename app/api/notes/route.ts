@@ -43,8 +43,6 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   await dbConnect();
   const { date, notes, location } = await request.json();
-  console.log("date", date, "notes: ", notes, "location", location)
-
   try {
     // Validate JWT token
     const token = request.cookies.get("authToken")?.value;
@@ -70,8 +68,6 @@ export async function POST(request: NextRequest) {
       notes,
       location,
     });
-
-    console.log("Notes : ",newNotes )
 
     await newNotes.save();
     return NextResponse.json(
