@@ -112,13 +112,13 @@ const EcoTable: React.FC<TableComponentProps> = ({
           </tr>
         </thead>
         <tbody>
-          {appointmentsGroupedByTime.map(({ timeSlot, appointments }) => (
-            <>
-              {appointments.map((appointment, index) => (
+          {appointmentsGroupedByTime.map(({ timeSlot, appointments }) => {
+            return appointments.length > 0 ? (
+              appointments.map((appointment, index) => (
                 <tr
                   key={appointment._id}
                   className={`${
-                    appointment.isConfirmed ? "bg-red-200" : "bg-white"
+                    appointment.isConfirmed ? "bg-red-200" : "bg-green-300"
                   } transition-colors`}
                 >
                   {/* Show timeSlot only for the first appointment in the group */}
@@ -158,9 +158,21 @@ const EcoTable: React.FC<TableComponentProps> = ({
                     </button>
                   </td>
                 </tr>
-              ))}
-            </>
-          ))}
+              ))
+            ) : (
+              <tr key={timeSlot} className="bg-white transition-colors">
+                <td className="border border-gray-200 px-4 py-2 text-gray-700">
+                  {timeSlot}
+                </td>
+                <td
+                  className="border border-gray-200 px-4 py-2 text-gray-700 text-center"
+                  colSpan={7}
+                >
+                  Nicio Rezervare
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
 
@@ -188,3 +200,4 @@ const EcoTable: React.FC<TableComponentProps> = ({
 };
 
 export default EcoTable;
+

@@ -118,7 +118,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
                 <tr
                   key={index}
                   className={`${
-                    appointment.isConfirmed === true ? "bg-red-200" : "bg-white"
+                    appointment.isConfirmed === true ? "bg-red-200" : "bg-green-300"
                   } transition-colors `}
                 >
                   {/* <td className="border border-gray-200 px-4 py-2 text-center">

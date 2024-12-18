@@ -388,7 +388,7 @@ export default function AppointmentAddEdit({
                   </div>
 
                   <div className="flex items-center space-x-4">
-                    <Label htmlFor="isConfirmed">Is Confirmed</Label>
+                    <Label htmlFor="isConfirmed" className="text-[20px] font-bold text-blue-500">{ values?.isConfirmed ? "Close Reservation" : "Active Reservation"} </Label>
                     <Field name="isConfirmed">
                       {({ field, form }: { field: any; form: any }) => (
                         <Switch
