@@ -37,6 +37,13 @@ export const generatePDF = ({
   doc.setTextColor(40, 40, 100);
   doc.text(`Appointments List for ${location} - ${day}, ${date}`, 12, 50);
 
+  // Sort data by time in ascending order
+  const sortedData = data.sort((a, b) => {
+    const timeA = a.time ? new Date(`1970-01-01T${a.time}`) : new Date(0); // Parse time to Date
+    const timeB = b.time ? new Date(`1970-01-01T${b.time}`) : new Date(0);
+    return timeA - timeB; // Compare times
+  });
+
   // Prepare table data
   const tableColumns = [
     "Time prezent",
@@ -47,7 +54,7 @@ export const generatePDF = ({
     "Doctor",
     "Notes",
   ];
-  const tableRows = data.map((appointment) => [
+  const tableRows = sortedData.map((appointment) => [
     appointment.time || "",
     appointment.patientName || "",
     appointment.patientSurname || "",
