@@ -12,14 +12,14 @@ const CalendarGrid = ({
   location,
   setLocation,
   dayName,
-  setDayName
+  setDayName,
 }: {
   selectedDate: any;
   setSelectedDate: any;
-  location:string,
-  setLocation : any
-  dayName:string,
-  setDayName : any
+  location: string;
+  setLocation: any;
+  dayName: string;
+  setDayName: any;
 }) => {
   const [currentDate, setCurrentDate] = useState(dayjs());
 
@@ -27,45 +27,53 @@ const CalendarGrid = ({
   const getCalendarDays = (date: any) => {
     const startOfMonth = date.startOf("month");
     const endOfMonth = date.endOf("month");
-  
+
     // Adjust the start to the closest Monday before or on the start of the month
     let currentDay = startOfMonth;
-    while (currentDay.day() !== 1) { // 1 = Monday
+    while (currentDay.day() !== 1) {
+      // 1 = Monday
       currentDay = currentDay.subtract(1, "day");
     }
-  
+
     const currentMonthDays = [];
-  
+
     // Add days from the adjusted start to the end of the month
-    for (let d = currentDay; d.isSameOrBefore(endOfMonth, "day"); d = d.add(1, "day")) {
-      if (d.day() !== 0) { // Exclude Sundays
+    for (
+      let d = currentDay;
+      d.isSameOrBefore(endOfMonth, "day");
+      d = d.add(1, "day")
+    ) {
+      if (d.day() !== 0) {
+        // Exclude Sundays
         currentMonthDays.push(d);
       }
     }
-  
+
     // Ensure the calendar ends on a Saturday
     let lastDay = currentMonthDays[currentMonthDays.length - 1];
-    while (lastDay.day() !== 6) { // 6 = Saturday
+    while (lastDay.day() !== 6) {
+      // 6 = Saturday
       lastDay = lastDay.add(1, "day");
-      if (lastDay.day() !== 0) { // Exclude Sundays
+      if (lastDay.day() !== 0) {
+        // Exclude Sundays
         currentMonthDays.push(lastDay);
       }
     }
-  
+
     return currentMonthDays;
   };
-  
+
   const calendarDays = getCalendarDays(currentDate);
 
   // Handle month navigation
-  const handleMonthChange = (direction:any) => {
+  const handleMonthChange = (direction: any) => {
     setCurrentDate((prev) => prev.add(direction, "month"));
   };
 
   // Format date as "DD/MM/YY"
-  const formatDate = (date:any) => date.format("DD/MM/YY");
+  const formatDate = (date: any) => date.format("DD/MM/YY");
 
-  const handleDateSelect = (date:any) => {
+  const handleDateSelect = (date: any) => {
     setSelectedDate(date);
     setDayName(date.format("dddd"));
   };
@@ -139,23 +147,18 @@ const CalendarGrid = ({
 
           {/* Calendar Grid */}
           <div className="grid grid-cols-6 gap-2 text-center lg:text-[15px] text-[12px]">
-             {/* Days of the Week */}
-             {[
-              "Luni",
-              "Marți",
-              "Miercuri",
-              "Joi",
-              "Vineri",
-              "Sâmbătă",
-             
-            ].map((day, index) => (
-              <div key={index} className="font-bold">
-                {day}
-              </div>
-            ))}
+            {/* Days of the Week */}
+            {["Luni", "Marți", "Miercuri", "Joi", "Vineri", "Sâmbătă"].map(
+              (day, index) => (
+                <div key={index} className="font-bold">
+                  {day}
+                </div>
+              )
+            )}
             {/* Dates */}
-            {calendarDays.map((date:any, index:number) => {
+            {calendarDays.map((date: any, index: number) => {
               const isCurrentMonth = date.month() === currentDate.month();
+              const isBeforeToday = date.isBefore(dayjs(), "day");
               const isSelected =
                 selectedDate && date.isSame(selectedDate, "day");
 
@@ -164,11 +167,13 @@ const CalendarGrid = ({
                   key={index}
                   onClick={() => handleDateSelect(date)}
                   className={`border rounded cursor-pointer ${
-                    isCurrentMonth
+                    isBeforeToday
+                      ? "bg-gray-300 text-gray-500"
+                      : isCurrentMonth
                       ? isSelected
                         ? "bg-green-500 text-white"
-                        : "bg-blue-500 text-white"
-                      : "bg-gray-100 text-gray-400"
+                        : "bg-blue-500 text-white hover:bg-green-500 hover:text-white"
+                      : "bg-gray-100 text-gray-400 hover:bg-green-500 hover:text-white"
                   }`}
                 >
                   {formatDate(date)}
@@ -183,4 +188,3 @@ const CalendarGrid = ({
 };
 
 export default CalendarGrid;
-

@@ -10,6 +10,7 @@ import { Button } from "./button";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useState } from "react";
+import isDateValid from "@/utils/isValidDate";
 
 interface Appointment {
   _id: string;
@@ -146,13 +147,23 @@ const EcoTable: React.FC<TableComponentProps> = ({
                   <td className="border border-gray-200 px-4 py-2 flex space-x-2">
                     <button
                       onClick={() => onEdit(appointment)}
-                      className="text-blue-500"
+                      className={`${
+                        isDateValid(appointment.date)
+                          ? "text-blue-500"
+                          : "text-gray-400 cursor-not-allowed"
+                      }`}
+                      disabled={!isDateValid(appointment.date)}
                     >
                       <Edit size={20} />
                     </button>
                     <button
                       onClick={() => confirmDelete(appointment)}
-                      className="text-red-500"
+                      className={`${
+                        isDateValid(appointment.date)
+                          ? "text-red-500"
+                          : "text-gray-400 cursor-not-allowed"
+                      }`}
+                      disabled={!isDateValid(appointment.date)}
                     >
                       <Trash size={20} />
                     </button>
@@ -165,7 +176,7 @@ const EcoTable: React.FC<TableComponentProps> = ({
                   {timeSlot}
                 </td>
                 <td
-                  className="border border-gray-200 px-4 py-2 text-gray-700 text-center"
+                  className="border border-gray-200 px-4 py-2 text-red-500 text-center"
                   colSpan={7}
                 >
                   Nicio Rezervare
@@ -200,4 +211,3 @@ const EcoTable: React.FC<TableComponentProps> = ({
 };
 
 export default EcoTable;
-

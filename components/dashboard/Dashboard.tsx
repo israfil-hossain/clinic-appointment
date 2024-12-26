@@ -16,6 +16,7 @@ import EcoTable from "../common/EcoTable";
 import Notes from "./Notes";
 import { getTimeSlotsByLocationAndDay } from "@/lib/timeSlots";
 import { useTimeSlotStore } from "@/store/timeStore";
+import AddAppointButton from "./AddButton";
 
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -88,8 +89,9 @@ const Dashboard = () => {
   const fetchTimeSlots = () => {
     if (location && selectDay) {
       const slots = getTimeSlotsByLocationAndDay(location, selectDay);
-      const apiTimes = data?.map((item: any) => item?.time).filter(Boolean) || [];
-  
+      const apiTimes =
+        data?.map((item: any) => item?.time).filter(Boolean) || [];
+
       const mergedTimes = Array.from(new Set([...slots, ...apiTimes]));
       setTimeSlots(mergedTimes);
     } else {
@@ -137,6 +139,10 @@ const Dashboard = () => {
       date: selectedDate?.format("D MMMM YYYY"),
       notes: textareaContent,
     });
+  };
+
+  const handleButtonClick = () => {
+    setIsModalOpen(true);
   };
 
   return (
@@ -187,35 +193,7 @@ const Dashboard = () => {
             "Nu a fost selectată nicio dată"}
         </div>
         <div className="w-full flex justify-between lg:px-10 px-5 ">
-          <div
-            className={`relative ${
-              selectedDate
-                ? "bg-[#D6EDFF] hover:bg-blue-200 cursor-pointer"
-                : "bg-gray-300 cursor-not-allowed"
-            } rounded-sm p-1 px-4 flex items-center space-x-2`}
-            onClick={() => {
-              if (selectedDate) setIsModalOpen(true);
-            }}
-          >
-            <Plus
-              size={20}
-              className={selectedDate ? "text-blue-500" : "text-gray-400"}
-            />
-            <p
-              className={`font-medium text-[14px] ${
-                selectedDate ? "text-blue-500" : "text-gray-500"
-              }`}
-            >
-              Adauga Rand
-            </p>
-
-            {/* Tooltip */}
-            {!selectedDate && (
-              <div className="absolute top-[-40px] left-1/2 transform -translate-x-1/2 bg-gray-700 text-white text-sm rounded-md py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
-                Please select a date
-              </div>
-            )}
-          </div>
+        <AddAppointButton selectedDate={selectedDate} onClick={handleButtonClick} />
 
           <button
             className="bg-blue-500 hover:bg-blue-400 text-white rounded px-4 py-1"

@@ -11,9 +11,11 @@ import {
 import { Button } from "@/components/ui/button"; // Adjust the import path
 import axios from "axios";
 import toast from "react-hot-toast";
+import isDateValid from "@/utils/isValidDate";
 
 interface Appointment {
   _id: string;
+  date: string;
   time: string;
   patientName: string;
   patientSurname: string;
@@ -146,15 +148,25 @@ const TableComponent: React.FC<TableComponentProps> = ({
                     {appointment.notes}
                   </td>
                   <td className="border border-gray-200 px-4 py-2 flex space-x-2">
-                    <button
+                  <button
                       onClick={() => onEdit(appointment)}
-                      className="text-blue-500"
+                      className={`${
+                        isDateValid(appointment.date)
+                          ? "text-blue-500"
+                          : "text-gray-400 cursor-not-allowed"
+                      }`}
+                      disabled={!isDateValid(appointment.date)}
                     >
                       <Edit size={20} />
                     </button>
                     <button
                       onClick={() => confirmDelete(appointment)}
-                      className="text-red-500"
+                      className={`${
+                        isDateValid(appointment.date)
+                          ? "text-red-500"
+                          : "text-gray-400 cursor-not-allowed"
+                      }`}
+                      disabled={!isDateValid(appointment.date)}
                     >
                       <Trash size={20} />
                     </button>
@@ -184,8 +196,8 @@ const TableComponent: React.FC<TableComponentProps> = ({
           </div>
         </>
       ) : (
-        <div className="text-center flex-col justify-center items-center py-5 bg-slate-200 rounded-md mt-5  h-28 w-[100%]">
-          <p>No Data available!</p>
+        <div className="text-center flex-col justify-center items-center py-5 bg-slate-200 text-red-500 rounded-md mt-5  h-28 w-[100%]">
+          <p className="font-bold text-[20px]">Nicio Rezervare !</p>
         </div>
       )}
 
