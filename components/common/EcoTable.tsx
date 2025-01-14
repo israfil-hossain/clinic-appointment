@@ -93,10 +93,7 @@ const EcoTable: React.FC<TableComponentProps> = ({
               Name
             </th>
             <th className="border border-gray-200 px-4 py-2 text-left font-medium">
-              Surname
-            </th>
-            <th className="border border-gray-200 px-4 py-2 text-left font-medium">
-              Department
+              Surnamed
             </th>
             <th className="border border-gray-200 px-4 py-2 text-left font-medium">
               Phone
@@ -106,6 +103,9 @@ const EcoTable: React.FC<TableComponentProps> = ({
             </th>
             <th className="border border-gray-200 px-4 py-2 text-left font-medium w-52">
               Notes
+            </th>
+            <th className="border border-gray-200 px-4 py-2 text-left font-medium">
+              Department
             </th>
             <th className="border border-gray-200 px-4 py-2 text-left font-medium">
               Actions
