@@ -1,19 +1,29 @@
-const mongoose = require("mongoose");
+import dbConnect from "./connect";
+import { userData } from "./data/userdata";
+const UserModel = require("./schema/User");
+const bcrypt = require("bcrypt");
 
-const UserSchema = new mongoose.Schema(
-  {
-    username: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    accessSection: { type: String, required: true },
-    role: { type: String, enum: ["admin", "operator"], default: "operator" },
-    createdAt: { type: Date, default: Date.now },
-  },
-  {
-    timestamps: true,
-  }
-);
-
-const User = mongoose.models.User || mongoose.model("User", UserSchema);
-
-module.exports = User;
+export const createUser = async () => {
+    await dbConnect();
+  
+    try {
+      const user = await UserModel.findOne({ email: userData.email });
+      if (user) throw new Error("Default admin user already exists.");
+  
+      const hashedPassword = await bcrypt.hash(userData.password, 10);
+  
+      const createdUser = new UserModel({
+        ...userData,
+        password: hashedPassword,
+      });
+  
+      await createdUser.save();
+      console.log("Default admin user created successfully.", createdUser);
+    } catch (error) {
+      console.error("Seeding failed:", error.message);
+    } finally {
+      mongoose.connection.close();
+      console.log("Seeding completed.");
+    }
+  };
+  
