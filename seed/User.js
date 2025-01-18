@@ -1,12 +1,11 @@
-import dbConnect from "./connect";
-import { userData } from "./data/userdata";
+const dbConnect = require("./connect");
+const { userData } = require("./data/userdata");
 const UserModel = require("./schema/User");
 const bcrypt = require("bcrypt");
 
 export const createUser = async () => {
-    await dbConnect();
-  
     try {
+      await dbConnect();
       const user = await UserModel.findOne({ email: userData.email });
       if (user) throw new Error("Default admin user already exists.");
   
