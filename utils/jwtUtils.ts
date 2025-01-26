@@ -1,13 +1,12 @@
-import { jwtVerify } from 'jose';
-
-const secret = process.env.SECRET;
+import jwt from 'jsonwebtoken';
 
 export async function verifyJWT(token: string) {
   try {
-    const { payload } = await jwtVerify(token, new TextEncoder().encode(secret));
-    return payload;
+    // Verify the token using the secret
+    const payload = jwt.verify(token, process.env.SECRET!);
+    return payload; // The decoded payload
   } catch (error) {
     console.error("JWT verification failed:", error);
-    return null;
+    return null; 
   }
 }

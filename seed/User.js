@@ -2,8 +2,9 @@ const dbConnect = require("./connect");
 const { userData } = require("./data/userdata");
 const UserModel = require("./schema/User");
 const bcrypt = require("bcrypt");
+const mongoose = require("mongoose");
 
-export const createUser = async () => {
+async function createUser() {
     try {
       await dbConnect();
       const user = await UserModel.findOne({ email: userData.email });
@@ -24,5 +25,7 @@ export const createUser = async () => {
       mongoose.connection.close();
       console.log("Seeding completed.");
     }
-  };
+};
+
+module.exports = createUser; 
   

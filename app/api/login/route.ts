@@ -1,10 +1,8 @@
 import bcrypt from "bcrypt";
 import dbConnect from "@/utils/mongodb";
-import { SignJWT } from "jose";
 import { NextRequest, NextResponse } from "next/server";
 import UserModel from "@/models/User";
-
-const secret = process.env.SECRET;
+import jwt from 'jsonwebtoken'
 
 export async function POST(request: NextRequest) {
   await dbConnect();
@@ -21,48 +19,44 @@ export async function POST(request: NextRequest) {
     const user = await UserModel.findOne({ email });
     if (!user) {
       return NextResponse.json(
-        { message: "Invalid Credentials !" },
+        { message: "User not found!" },
         { status: 404 }
       );
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
+   
+    if(isPasswordValid){
+      const tokenData = {
+        id:user._id,
+        email:user.email,
+        username:user.username
+      }
+  
+      const token = jwt.sign(tokenData,process.env.SECRET!,{expiresIn:'7d'})
+      
+  
+      const userResponse = {
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        access: user.accessSection,
+      };
+  
+      const loginResponse = NextResponse.json(
+        { message: "Login Successfull !", user: userResponse, token },
+        { status: 200 }
+      );
+  
+      loginResponse.cookies.set('token',token,{httpOnly:true})
+      return loginResponse
+    }
+    else{
       return NextResponse.json(
         { message: "Invalid Credentials" },
         { status: 404 }
       );
     }
-
-    const jwtSecret = new TextEncoder().encode(secret);
-    const sevenDaysInSeconds = 7 * 24 * 60 * 60;
-    const token = await new SignJWT({ userId: user._id })
-      .setProtectedHeader({ alg: "HS256" })
-      .setExpirationTime(Math.floor(Date.now() / 1000) + sevenDaysInSeconds)
-      .sign(jwtSecret);
-
-    const userResponse = {
-      username: user.username,
-      email: user.email,
-      role: user.role,
-      access: user.accessSection,
-    };
-
-    const loginResponse = NextResponse.json(
-      { message: "Login Successful !", user: userResponse, token },
-      { status: 200 }
-    );
-
-    loginResponse.cookies.set({
-      name: "authToken", 
-      value: token, 
-      path: "/",
-      httpOnly: true, 
-      maxAge: 7 * 24 * 60 * 60 * 1000, 
-      secure: process.env.NODE_ENV === "production", 
-    });
-
-    return loginResponse;
   } catch (err) {
     console.error(err);
     return NextResponse.json({ message: "Server Error" }, { status: 500 });

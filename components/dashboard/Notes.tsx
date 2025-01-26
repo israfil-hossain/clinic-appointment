@@ -22,16 +22,15 @@ const Notes: React.FC<NotesProps> = ({ selectedDate, location,textareaContent,se
         withCredentials: true,
       });
 
-      if (response.data?.success && response.data.data.length > 0) {
-        const note = response.data.data[0];
-        setTextareaContent(note.notes || "");
+      if (response.data?.success && response?.data?.data?.length > 0) {
+        const note = response?.data?.data[0];
+        setTextareaContent(note?.notes || "");
         setNoteId(note._id);
       } else {
         setTextareaContent("");
         setNoteId(null);
       }
     } catch (error) {
-      toast.error("Error fetching notes.");
       console.error("Error fetching notes:", error);
     } finally {
       setIsLoading(false);

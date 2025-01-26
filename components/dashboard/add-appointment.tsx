@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Formik, Form, Field, FormikHelpers, FormikErrors } from "formik";
 import * as Yup from "yup";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ import utc from "dayjs/plugin/utc";
 import dayjs from "dayjs";
 import { useTimeSlotStore } from "@/store/timeStore";
 import { Switch } from "@/components/ui/switch";
+import { fetchTimeSlotsAPI } from "@/service/scheduleService";
 
 dayjs.extend(utc);
 
@@ -52,6 +53,7 @@ interface AppointmentAddEditProps {
   handleModal: () => void;
   date?: any;
   location: string;
+  day?: string;
   data?: Appointment | null;
   fetchAppointments: () => void;
 }
@@ -61,12 +63,15 @@ export default function AppointmentAddEdit({
   isEco,
   handleModal,
   date,
+  day,
   location,
   data,
   fetchAppointments,
 }: AppointmentAddEditProps) {
+  const [newTime, setNewTime] = useState("");
+
   const [selectedDepartment, setSelectedDepartment] = useState("");
-  const { timeSlots } = useTimeSlotStore();
+  const { timeSlots, setTimeSlots } = useTimeSlotStore();
 
   const appointmentDate = dayjs(date).startOf("day");
   const formattedDate = appointmentDate.format("YYYY-MM-DD");
@@ -141,6 +146,54 @@ export default function AppointmentAddEdit({
       toast.error("An error occurred while updating the appointment");
     }
   };
+
+  // get the time slots ...
+  const fetchTimeSlots = async () => {
+    if (location && day) {
+      const slots = await fetchTimeSlotsAPI(
+        location,
+        day,
+        date?.format("YYYY-MM-DD")
+      );
+      setTimeSlots(slots);
+    } else {
+      console.warn("Location or selectDay is missing.");
+      setTimeSlots([]);
+    }
+  };
+
+  // Add new time slots according to Location , Day and Date Wise ..... 
+  const handleAddTime = async () => {
+    try{
+      const response = await axios.post(
+        "/api/schedule",
+        {
+          location,
+          day,
+          timeSlot: { time: newTime , date: formattedDate}
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if(response.status === 201){
+        toast.success("New Time Add Successfully !")
+        fetchTimeSlots();
+      }
+    }
+    catch(err){
+      console.error(err)
+      toast.error("Failed to add new time");
+    }
+  };
+
+  useEffect(() => {
+    if (location && day) {
+      fetchTimeSlots();
+    }
+  }, [location, day, date]);
 
   return (
     <div className="w-full overflow-auto">
@@ -276,8 +329,29 @@ export default function AppointmentAddEdit({
                       )}
                     </>
                   )}
-
-                  <div className="w-full flex space-x-5">
+                  <div>
+                    <Label>Location</Label>
+                    <div
+                      role="group"
+                      aria-labelledby="location-group"
+                      className="flex space-x-5 border p-2 rounded-lg"
+                    >
+                      {locations.map((loc) => (
+                        <label key={loc.value} className="flex items-center">
+                          <Field
+                            type="radio"
+                            name="location"
+                            value={loc.value}
+                            className="mr-2"
+                            checked={values.location === loc.value}
+                          />
+                          {loc.label}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                 
+                  <div className="w-full flex space-x-10">
                     {isEco ? (
                       <div>
                         <Label htmlFor="time" className="pb-3">
@@ -323,22 +397,33 @@ export default function AppointmentAddEdit({
                           >
                             <option value="">Select a time</option>
                             {timeSlots.map((slot: any) => (
-                              <option key={slot} value={slot}>
-                                {slot}
+                              <option key={slot?._id} value={slot?.time}>
+                                {slot?.time}
                               </option>
                             ))}
                           </Field>
                         ) : (
-                          <Field
-                            name="time"
-                            type="time"
-                            as={Input}
-                            id="time"
-                            className="mt-2 w-full"
-                            onChange={(
-                              e: React.ChangeEvent<HTMLInputElement>
-                            ) => setFieldValue("time", e.target.value)}
-                          />
+                          <div className="flex space-x-2 items-center justify-center">
+                            <Field
+                              name="time"
+                              type="time"
+                              as={Input}
+                              id="time2"
+                              className="mt-2 w-full"
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) => {
+                                setNewTime(e.target.value)
+                                setFieldValue("time", e.target.value)
+                              }}
+                            />
+                            <div
+                              className="cursor-pointer bg-gray-800  hover:bg-gray-700 items-center rounded-lg px-3 py-1 text-white text-sm"
+                              onClick={handleAddTime}
+                            >
+                              Save
+                            </div>
+                          </div>
                         )}
                         {errors.time && touched.time && (
                           <div className="text-red-500">{errors.time}</div>
@@ -353,28 +438,6 @@ export default function AppointmentAddEdit({
                         )}
                       </div>
                     )}
-
-                    <div>
-                      <Label>Location</Label>
-                      <div
-                        role="group"
-                        aria-labelledby="location-group"
-                        className="flex space-x-5 border p-2 rounded-lg"
-                      >
-                        {locations.map((loc) => (
-                          <label key={loc.value} className="flex items-center">
-                            <Field
-                              type="radio"
-                              name="location"
-                              value={loc.value}
-                              className="mr-2"
-                              checked={values.location === loc.value}
-                            />
-                            {loc.label}
-                          </label>
-                        ))}
-                      </div>
-                    </div>
                   </div>
 
                   <div>
@@ -388,7 +451,14 @@ export default function AppointmentAddEdit({
                   </div>
 
                   <div className="flex items-center space-x-4">
-                    <Label htmlFor="isConfirmed" className="text-[20px] font-bold text-blue-500">{ values?.isConfirmed ? "Close Reservation" : "Active Reservation"} </Label>
+                    <Label
+                      htmlFor="isConfirmed"
+                      className="text-[20px] font-bold text-blue-500"
+                    >
+                      {values?.isConfirmed
+                        ? "Close Reservation"
+                        : "Active Reservation"}{" "}
+                    </Label>
                     <Field name="isConfirmed">
                       {({ field, form }: { field: any; form: any }) => (
                         <Switch

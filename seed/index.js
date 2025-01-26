@@ -1,20 +1,13 @@
-const dbConnect = require("./connect");
-const { timeSlot } = require("./timeslot");
-const { createUser } = require("./User");
-const mongoose = require("mongoose"); 
+const seedTimeSlots = require('./timeslot');
+const createUser = require('./User');
 
-const seedDatabase = async () => {
-  try {
-    await dbConnect();
-    await createUser();
-    await timeSlot();
-  } catch (err) {
-    console.error(err);
-    console.log("Something is wrong ... ")
-  } finally {
-    await mongoose.connection.close();
-    console.log("Db Seeding is completed ...");
-  }
-};
-
-seedDatabase();
+(async () => {
+    console.log("Starting the database seeding process...");
+    try {
+        await seedTimeSlots();
+        await createUser(); 
+        console.log("Database seeding completed successfully.");
+    } catch (error) {
+        console.error("Error during database seeding:", error);
+    }
+})();
