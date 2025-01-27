@@ -11,6 +11,7 @@ const AppointmentSchema: Schema = new Schema({
   doctorName: {type:String, requierd: true },
   phoneNumber: { type: String, required: true },
   isConfirmed: { type: Boolean, default: false },
+  isDefault: {type : Boolean, default: false }, 
   notes: { type: String, default: '' },
   createdAt: { type: Date, default: Date.now },
 },{

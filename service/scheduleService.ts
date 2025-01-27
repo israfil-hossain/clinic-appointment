@@ -7,7 +7,6 @@ export async function getTimeSlotsByLocationAndDay(filters:any) {
       params: filters, 
       withCredentials: true,
     });
-    console.log("Response", response)
 
     if (response.data) {
       return response.data.data; // Return time slots if successful
@@ -29,8 +28,8 @@ export const fetchTimeSlotsAPI = async (location:string, dayName:string, date?:s
   
   const filters = {
     location,
-    day: dayName, // Assuming your API expects 'day' as the key
-    ...(date && { date }), // Include date only if provided
+    day: dayName, 
+    ...(date && { date }),
   };
 
   try {
