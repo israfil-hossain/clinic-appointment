@@ -31,7 +31,6 @@ const SignIn = () => {
       setIsLoading(true);
       const response = await axios.post("/api/login", values);
       if (response.status === 200) {
-        console.log("response : ", response.data);
         const { user, token } = response.data;
         setUser(user);
         // Set the token in cookies

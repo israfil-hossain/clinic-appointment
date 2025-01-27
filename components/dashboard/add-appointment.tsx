@@ -81,14 +81,24 @@ export default function AppointmentAddEdit({
     { resetForm }: { resetForm: any }
   ) => {
     try {
+      const isDefault =
+      timeSlots.some(
+        (slot: any) =>
+          slot.time === values.time && slot.date === "00:00:00"
+      );
+
+      const appointmentData = {
+        ...values,
+        date: formattedDate,
+        isDefault,
+      };
+
       if (data) {
-        await updateAppointment(data?._id, {
-          ...values,
-          date: formattedDate,
-        });
+        await updateAppointment(data?._id, appointmentData);
       } else {
-        await createAppointment(values, formattedDate);
+        await createAppointment(appointmentData, formattedDate);
       }
+      
       resetForm();
       handleModal();
       fetchAppointments();
@@ -383,7 +393,7 @@ export default function AppointmentAddEdit({
                               }}
                               checked={values.timeType === "custom"}
                             />
-                            <span className="ml-2">Custom Time</span>
+                            <span className="ml-2">Add New Custom Time For Today</span>
                           </label>
                         </div>
 
@@ -403,27 +413,30 @@ export default function AppointmentAddEdit({
                             ))}
                           </Field>
                         ) : (
-                          <div className="flex space-x-2 items-center justify-center">
-                            <Field
-                              name="time"
-                              type="time"
-                              as={Input}
-                              id="time2"
-                              className="mt-2 w-full"
-                              onChange={(
-                                e: React.ChangeEvent<HTMLInputElement>
-                              ) => {
-                                setNewTime(e.target.value)
-                                setFieldValue("time", e.target.value)
-                              }}
-                            />
-                            <div
-                              className="cursor-pointer bg-gray-800  hover:bg-gray-700 items-center rounded-lg px-3 py-1 text-white text-sm"
-                              onClick={handleAddTime}
-                            >
-                              Save
+                          <>
+                            <span className="text-[12px] text-red-400 ">This temporaly new time schedule apply for only date : {formattedDate} </span>
+                            <div className="flex space-x-2 items-center justify-center">
+                              <Field
+                                name="time"
+                                type="time"
+                                as={Input}
+                                id="time2"
+                                className="mt-2 w-full flex px-5"
+                                onChange={(
+                                  e: React.ChangeEvent<HTMLInputElement>
+                                ) => {
+                                  setNewTime(e.target.value)
+                                  setFieldValue("time", e.target.value)
+                                }}
+                              />
+                              <div
+                                className="cursor-pointer bg-gray-800  hover:bg-gray-700 items-center rounded-lg px-3 py-2 mt-2 text-white text-sm"
+                                onClick={handleAddTime}
+                              >
+                                Save
+                              </div>
                             </div>
-                          </div>
+                          </>
                         )}
                         {errors.time && touched.time && (
                           <div className="text-red-500">{errors.time}</div>

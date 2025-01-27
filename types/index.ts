@@ -19,6 +19,13 @@ export interface Appointment {
   createdAt?: Date;
 }
 
+export interface Colors {
+  location: string;
+  date: Date;
+  color: string;
+  createdAt?: Date;
+}
+
 export interface Notes{
   date: Date;
   notes: string; 

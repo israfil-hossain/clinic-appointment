@@ -63,7 +63,6 @@ const Dashboard = () => {
   const fetchTimeSlots = async () => {
     if (location && selectDay) {
       const slots = await fetchTimeSlotsAPI(location, selectDay,selectedDate?.format("YYYY-MM-DD"));
-      console.log("Get Time slots ==> ", slots); 
       setTimeSlots(slots);
     } else {
       console.warn("Location or selectDay is missing.");
@@ -161,6 +160,8 @@ const Dashboard = () => {
           setLocation={setLocation}
           dayName={dayName}
           setDayName={setDayName}
+          appointmentData={data}
+          scheduleData={timeSlots}
         />
         <div className="w-full text-center text-[18px] font-semibold py-2 border-t pt-5">
           {location} - {selectDay},{" "}
