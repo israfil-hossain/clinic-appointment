@@ -1,7 +1,7 @@
 import dbConnect from "@/utils/mongodb";
 import { NextRequest, NextResponse } from "next/server";
 
-import { verifyJWT } from "@/utils/jwtUtils";
+import { verifyJWT } from "@/utils/jwtUtils"; 
 import NotesModel from "@/models/Notes";
 
 export async function GET(request: NextRequest) {
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   const location = searchParams.get("location");
 
   try {
-    const token = request.cookies.get("authToken")?.value;
+    const token = request.cookies.get("token")?.value;
     if (!token) {
       return NextResponse.json(
         { message: "Authentication required!" },
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
   const { date, notes, location } = await request.json();
   try {
     // Validate JWT token
-    const token = request.cookies.get("authToken")?.value;
+    const token = request.cookies.get("token")?.value;
     if (!token) {
       return NextResponse.json(
         { message: "Authentication required!" },
@@ -94,7 +94,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const updatedData = await request.json();
-    const token = request.cookies.get("authToken")?.value;
+    const token = request.cookies.get("token")?.value;
     if (!token) {
       return NextResponse.json(
         { message: "Authentication required!" },

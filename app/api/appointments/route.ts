@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
   
     try {
       // Validate JWT token
-      const token = request.cookies.get("authToken")?.value;
+      const token = request.cookies.get("token")?.value;
       if (!token) {
         return NextResponse.json(
           { message: "Authentication required!" },
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
       console.error(err);
       return NextResponse.json({ message: "Server Error" }, { status: 500 });
     }
-  }
+}
 
 export async function POST(request: NextRequest) {
   await dbConnect();
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
 
   try {
     // Validate JWT token
-    const token = request.cookies.get("authToken")?.value;
+    const token = request.cookies.get("token")?.value;
     if (!token) {
       return NextResponse.json(
         { message: "Authentication required!" },
@@ -118,7 +118,7 @@ export async function PATCH(request: NextRequest) {
     const updatedData = await request.json();
 
     // Validate JWT token
-    const token = request.cookies.get("authToken")?.value;
+    const token = request.cookies.get("token")?.value;
     if (!token) {
       return NextResponse.json(
         { message: "Authentication required!" },
@@ -173,7 +173,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Validate JWT token
-    const token = request.cookies.get("authToken")?.value;
+    const token = request.cookies.get("token")?.value;
     if (!token) {
       return NextResponse.json(
         { message: "Authentication required!" },

@@ -8,22 +8,33 @@ export const useAuthEffect = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const checkAuthToken = () => {
-      const token = Cookies.get("authToken");
+    const checktoken = () => {
+      const token = Cookies.get("token");
+
       if (token) {
-        // You might want to decode the token or check its expiry manually if needed
-        const expirationDate = JSON.parse(atob(token.split(".")[1])).exp;
-        if (expirationDate * 1000 < Date.now()) {
+        try {
+          // Decode token to check its expiration date
+          const decodedToken = JSON.parse(atob(token.split(".")[1]));
+          const expirationDate = decodedToken.exp;
+
+          // If the token is expired, clear the user and redirect with `session=invalid`
+          if (expirationDate * 1000 < Date.now()) {
+            clearUser();
+            Cookies.remove("token");
+            router.push("/?session=invalid");
+          }
+        } catch (error) {
+          console.error("Error decoding token:", error);
           clearUser();
-          Cookies.remove("authToken");
-          router.push("/");
+          Cookies.remove("token");
+          router.push("/?session=invalid");
         }
       } else {
-        // If there's no token, just redirect to the login page
-        router.push("/");
+        // If no token is found, redirect to login with `session=invalid`
+        router.push("/?session=invalid");
       }
     };
 
-    checkAuthToken();
+    checktoken();
   }, [clearUser, router]);
 };

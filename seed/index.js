@@ -1,38 +1,13 @@
-const bcrypt = require("bcrypt");
-const mongoose = require("mongoose");
-const dbConnect = require("./connect");
-const UserModel = require("./User");
+const seedTimeSlots = require('./timeslot');
+const createUser = require('./User');
 
-const createUser = async () => {
-  await dbConnect();
-
-  const userData = {
-    username: "Admin",
-    email: "receptie@policlinicamos.ro",
-    password: "Martie1967*",
-    accessSection: "all",
-    role: "admin",
-  };
-
-  try {
-    const user = await UserModel.findOne({ email: userData.email });
-    if (user) throw new Error("Default admin user already exists.");
-
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
-
-    const createdUser = new UserModel({
-      ...userData,
-      password: hashedPassword,
-    });
-
-    await createdUser.save();
-    console.log("Default admin user created successfully.", createdUser);
-  } catch (error) {
-    console.error("Seeding failed:", error.message);
-  } finally {
-    mongoose.connection.close();
-    console.log("Seeding completed.");
-  }
-};
-
-createUser();
+(async () => {
+    console.log("Starting the database seeding process...");
+    try {
+        await seedTimeSlots();
+        await createUser(); 
+        console.log("Database seeding completed successfully.");
+    } catch (error) {
+        console.error("Error during database seeding:", error);
+    }
+})();

@@ -15,7 +15,7 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     const res = await axios.get("/api/logout");
-    Cookies.remove("authToken");
+    Cookies.remove("token");
     clearUser();
     toast.success(res.data.message);
     router.push("/");

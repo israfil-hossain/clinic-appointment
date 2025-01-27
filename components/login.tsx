@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import { useUserStore } from "@/store/store";
 import { useAuthEffect } from "@/hook/useAuthEffect";
 import Cookies from "js-cookie";
+import { Eye, EyeOff } from "lucide-react";
 
 const signInSchema = Yup.object().shape({
   email: Yup.string()
@@ -22,29 +23,28 @@ const signInSchema = Yup.object().shape({
 const SignIn = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
   const { setUser } = useUserStore();
-  useAuthEffect();
 
   const handleSubmit = async (values: any) => {
     try {
       setIsLoading(true);
       const response = await axios.post("/api/login", values);
       if (response.status === 200) {
+        console.log("response : ", response.data);
         const { user, token } = response.data;
         setUser(user);
         // Set the token in cookies
-        Cookies.set("authToken", token, { expires: 7 });
+        Cookies.set("token", token, { expires: 7 });
         router.push("/dashboard");
         toast.success("Signin Successfully!");
-      }
-      else {
+      } else {
         toast.error(response.statusText || "Something went wrong!");
       }
     } catch (err) {
       console.error(err);
       toast.error("Something went wrong !");
-    }
-    finally {
+    } finally {
       setIsLoading(false);
     }
   };
@@ -92,7 +92,7 @@ const SignIn = () => {
                 />
               </div>
 
-              <div>
+              <div className="relative">
                 <label
                   htmlFor="password"
                   className="block text-sm font-medium text-gray-700"
@@ -100,11 +100,17 @@ const SignIn = () => {
                   Password
                 </label>
                 <Field
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   id="password"
                   className="mt-1 block w-full p-2 border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
+                <div
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-2 top-8 items-center "
+                >
+                  {showPassword ? <Eye /> : <EyeOff />}
+                </div>
                 <ErrorMessage
                   name="password"
                   component="p"

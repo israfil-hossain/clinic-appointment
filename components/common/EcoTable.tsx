@@ -48,16 +48,11 @@ const EcoTable: React.FC<TableComponentProps> = ({
     return time.padStart(5, "0"); // Normalize to "08:30" format, for example
   };
 
-  // Sort the time slots in ascending order
-  const sortedTimeSlots = [...timeSlots].sort((a, b) =>
-    normalizeTime(a).localeCompare(normalizeTime(b))
-  );
-
   // Group appointments by timeSlot
-  const appointmentsGroupedByTime = sortedTimeSlots.map((timeSlot) => ({
-    timeSlot,
+  const appointmentsGroupedByTime = timeSlots.map((timeSlot: any) => ({
+    timeSlot: timeSlot?.time,
     appointments: appointments.filter(
-      (appt) => normalizeTime(appt.time) === normalizeTime(timeSlot)
+      (appt) => normalizeTime(appt.time) === normalizeTime(timeSlot?.time)
     ),
   }));
 
@@ -113,77 +108,94 @@ const EcoTable: React.FC<TableComponentProps> = ({
           </tr>
         </thead>
         <tbody>
-          {appointmentsGroupedByTime.map(({ timeSlot, appointments }) => {
-            return appointments.length > 0 ? (
-              appointments.map((appointment, index) => (
-                <tr
-                  key={appointment._id}
-                  className={`${
-                    appointment.isConfirmed ? "bg-red-200" : "bg-green-300"
-                  } transition-colors`}
-                >
-                  {/* Show timeSlot only for the first appointment in the group */}
-                  <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                    {index === 0 ? timeSlot : ""}
-                  </td>
-                  <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                    {appointment.patientName}
-                  </td>
-                  <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                    {appointment.patientSurname}
-                  </td>
-                  <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                    {appointment.testType}
-                  </td>
-                  <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                    {appointment.phoneNumber}
-                  </td>
-                  <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                    {appointment.doctorName}
-                  </td>
-                  <td className="border border-gray-200 px-4 py-2 text-gray-700 text-[12px] text-wrap overflow-x-auto">
-                    {appointment.notes || "-"}
-                  </td>
-                  <td className="border border-gray-200 px-4 py-2 flex space-x-2">
-                    <button
-                      onClick={() => onEdit(appointment)}
-                      className={`${
-                        isDateValid(appointment.date)
-                          ? "text-blue-500"
-                          : "text-gray-400 cursor-not-allowed"
-                      }`}
-                      disabled={!isDateValid(appointment.date)}
-                    >
-                      <Edit size={20} />
-                    </button>
-                    <button
-                      onClick={() => confirmDelete(appointment)}
-                      className={`${
-                        isDateValid(appointment.date)
-                          ? "text-red-500"
-                          : "text-gray-400 cursor-not-allowed"
-                      }`}
-                      disabled={!isDateValid(appointment.date)}
-                    >
-                      <Trash size={20} />
-                    </button>
-                  </td>
-                </tr>
-              ))
+          <>
+            {appointmentsGroupedByTime?.length > 0 ? (
+              <>
+                {appointmentsGroupedByTime?.map(
+                  ({ timeSlot, appointments }) => {
+                    return appointments.length > 0 ? (
+                      appointments.map((appointment, index) => (
+                        <tr
+                          key={appointment._id}
+                          className={`${
+                            appointment.isConfirmed
+                              ? "bg-red-200"
+                              : "bg-green-300"
+                          } transition-colors`}
+                        >
+                          {/* Show timeSlot only for the first appointment in the group */}
+                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
+                            {index === 0 ? timeSlot : ""}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
+                            {appointment.patientName}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
+                            {appointment.patientSurname}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
+                            {appointment.testType}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
+                            {appointment.phoneNumber}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
+                            {appointment.doctorName}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2 text-gray-700 text-[12px] text-wrap overflow-x-auto">
+                            {appointment.notes || "-"}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2 flex space-x-2">
+                            <button
+                              onClick={() => onEdit(appointment)}
+                              className={`${
+                                isDateValid(appointment.date)
+                                  ? "text-blue-500"
+                                  : "text-gray-400 cursor-not-allowed"
+                              }`}
+                              disabled={!isDateValid(appointment.date)}
+                            >
+                              <Edit size={20} />
+                            </button>
+                            <button
+                              onClick={() => confirmDelete(appointment)}
+                              className={`${
+                                isDateValid(appointment.date)
+                                  ? "text-red-500"
+                                  : "text-gray-400 cursor-not-allowed"
+                              }`}
+                              disabled={!isDateValid(appointment.date)}
+                            >
+                              <Trash size={20} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr key={timeSlot} className="bg-white transition-colors">
+                        <td className="border border-gray-200 px-4 py-2 text-gray-700">
+                          {timeSlot}
+                        </td>
+                        <td
+                          className="border border-gray-200 px-4 py-2 text-red-500 text-center"
+                          colSpan={7}
+                        >
+                          Nicio Rezervare
+                        </td>
+                      </tr>
+                    );
+                  }
+                )}
+              </>
             ) : (
-              <tr key={timeSlot} className="bg-white transition-colors">
-                <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                  {timeSlot}
-                </td>
-                <td
-                  className="border border-gray-200 px-4 py-2 text-red-500 text-center"
-                  colSpan={7}
-                >
-                  Nicio Rezervare
-                </td>
-              </tr>
-            );
-          })}
+              <td
+                className="border border-gray-200 px-4  text-red-500 text-center text-xl py-10"
+                colSpan={8}
+              >
+                Nicio Rezervare
+              </td>
+            )}
+          </>
         </tbody>
       </table>
 

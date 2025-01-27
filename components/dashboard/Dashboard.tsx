@@ -1,6 +1,5 @@
 "use client";
 
-import { Plus, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
 import TableComponent from "../common/table-component";
@@ -9,31 +8,28 @@ import AppointmentAddEdit from "./add-appointment";
 import { departmentsData } from "@/lib/department";
 import dayjs from "dayjs";
 import { dayNameMap } from "@/lib/dayNameMap";
-import axios from "axios";
 import Spinner from "../common/loader";
-import { generatePDF } from "@/utils/pdfUtils";
 import EcoTable from "../common/EcoTable";
 import Notes from "./Notes";
-import { getTimeSlotsByLocationAndDay } from "@/lib/timeSlots";
 import { useTimeSlotStore } from "@/store/timeStore";
-import AddAppointButton from "./AddButton";
+import { fetchAppointmentsAPI } from "@/service/appointmentService";
+import { handleDownloadPDF, TestTypeSelectedRefresh } from "@/service/actionService";
+import { fetchTimeSlotsAPI } from "@/service/scheduleService";
+import AddAppointmentButton from "./AddButton";
 
 const Dashboard = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<dayjs.Dayjs | null>(dayjs());
   const [location, setLocation] = useState("Beiuș");
   const [dayName, setDayName] = useState("");
+  const [selectedDate, setSelectedDate] = useState<dayjs.Dayjs | null>(dayjs());
   const [editData, setEditData] = useState<any>(null);
   const [data, setAppointments] = useState<any>(null);
   const [selectedTestType, setSelectedTestType] = useState<string | null>(null);
   const [textareaContent, setTextareaContent] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
   const { setTimeSlots, timeSlots } = useTimeSlotStore();
 
-  const handleModal = () => {
-    setIsModalOpen(false);
-    setEditData(null);
-  };
 
   // Map the Normal Day with Romania Day name ...
   const selectDay =
@@ -50,16 +46,8 @@ const Dashboard = () => {
       };
 
       // Make GET request with filters
-      const response = await axios.get("/api/appointments", {
-        params: filters,
-        withCredentials: true,
-      });
-
-      if (response.data?.success) {
-        setAppointments(response.data.data);
-      } else {
-        console.error("Failed to fetch appointments:", response.data.message);
-      }
+      const data = await fetchAppointmentsAPI(filters);
+      setAppointments(data);
       setIsLoading(false);
     } catch (error) {
       console.error("Error fetching appointments:", error);
@@ -71,29 +59,12 @@ const Dashboard = () => {
     fetchAppointments();
   }, [selectedDate, location, selectedTestType]);
 
-  // Handle The Tab Selection ...
-  const handleTestTypeSelection = (testType: string) => {
-    setSelectedTestType(testType);
-    TestTypeSelectedRefresh(testType);
-  };
-
-  const TestTypeSelectedRefresh = (testType: string | null) => {
-    if (testType) {
-      localStorage.setItem("selectedTestType", testType);
-    } else {
-      localStorage.removeItem("selectedTestType");
-    }
-  };
-
   // According to Location and Day Name Get the timeSlots....
-  const fetchTimeSlots = () => {
+  const fetchTimeSlots = async () => {
     if (location && selectDay) {
-      const slots = getTimeSlotsByLocationAndDay(location, selectDay);
-      const apiTimes =
-        data?.map((item: any) => item?.time).filter(Boolean) || [];
-
-      const mergedTimes = Array.from(new Set([...slots, ...apiTimes]));
-      setTimeSlots(mergedTimes);
+      const slots = await fetchTimeSlotsAPI(location, selectDay,selectedDate?.format("YYYY-MM-DD"));
+      console.log("Get Time slots ==> ", slots); 
+      setTimeSlots(slots);
     } else {
       console.warn("Location or selectDay is missing.");
       setTimeSlots([]);
@@ -107,6 +78,13 @@ const Dashboard = () => {
     }
   }, [location, selectDay, selectedTestType, selectedDate, data]);
 
+
+  // Handle The Tab Selection ...
+  const handleTestTypeSelection = (testType: string) => {
+    setSelectedTestType(testType);
+    TestTypeSelectedRefresh(testType);
+  };
+
   // Persist selectedTestType in local storage
   useEffect(() => {
     const savedTestType = localStorage.getItem("selectedTestType");
@@ -115,12 +93,14 @@ const Dashboard = () => {
     }
   }, []);
 
-  // Table View Function ....
+  // Table Actions ........................................
+
+  // Handle View Function ....
   const handleView = (appointment: any) => {
     alert(`Viewing appointment for ${appointment.name} ${appointment.surname}`);
   };
 
-  // Table Edit Function ...
+  // Handle Edit Function ...
   const handleEdit = async (appointment: any) => {
     if (!selectedDate) {
       alert(`Please Select Date. `);
@@ -130,18 +110,13 @@ const Dashboard = () => {
     }
   };
 
-  // handle Download function
-  const handleDownloadPDF = () => {
-    generatePDF({
-      data,
-      location,
-      day: selectDay,
-      date: selectedDate?.format("D MMMM YYYY"),
-      notes: textareaContent,
-    });
+  // Modal Actions ........................
+  const handleModal = () => {
+    setIsModalOpen(false);
+    setEditData(null);
   };
 
-  const handleButtonClick = () => {
+  const handleAddAppointment = () => {
     setIsModalOpen(true);
   };
 
@@ -193,17 +168,28 @@ const Dashboard = () => {
             "Nu a fost selectată nicio dată"}
         </div>
         <div className="w-full flex justify-between lg:px-10 px-5 ">
-        <AddAppointButton selectedDate={selectedDate} onClick={handleButtonClick} />
+          <AddAppointmentButton
+            selectedDate={selectedDate}
+            onClick={handleAddAppointment}
+          />
 
           <button
             className="bg-blue-500 hover:bg-blue-400 text-white rounded px-4 py-1"
-            onClick={handleDownloadPDF}
+            onClick={() =>
+              handleDownloadPDF(
+                data,
+                location,
+                selectDay,
+                selectedDate,
+                textareaContent
+              )
+            }
           >
             Download PDF
           </button>
         </div>
         {isLoading ? (
-          <div className="py-5 bg-slate-200 rounded-md mt-5 h-28 w-[100%]">
+          <div className="py-5 bg-white rounded-md flex justify-center items-start pt-20 min-h-screen w-[100%]">
             <Spinner />
           </div>
         ) : (
@@ -241,9 +227,11 @@ const Dashboard = () => {
         handleModal={handleModal}
         isEco={selectedTestType === "Ecografie"}
         date={selectedDate}
+        day = {selectDay}
         location={location}
         fetchAppointments={fetchAppointments}
         data={editData ? editData : null}
+
       />
     </div>
   );
