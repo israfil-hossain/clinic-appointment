@@ -82,28 +82,25 @@ const EcoTable: React.FC<TableComponentProps> = ({
         <thead>
           <tr className="bg-white">
             <th className="border border-gray-200 px-4 py-2 text-left font-medium">
-              Time
+              ORA
             </th>
             <th className="border border-gray-200 px-4 py-2 text-left font-medium">
-              Name
+              NUME
             </th>
             <th className="border border-gray-200 px-4 py-2 text-left font-medium">
-              Surnamed
+              TELEFON
             </th>
             <th className="border border-gray-200 px-4 py-2 text-left font-medium">
-              Phone
-            </th>
-            <th className="border border-gray-200 px-4 py-2 text-left font-medium">
-              Doctor
+              DOCTOR
             </th>
             <th className="border border-gray-200 px-4 py-2 text-left font-medium w-52">
-              Notes
+              OBSERVATII
             </th>
             <th className="border border-gray-200 px-4 py-2 text-left font-medium">
-              Department
+              SECTIE
             </th>
             <th className="border border-gray-200 px-4 py-2 text-left font-medium">
-              Actions
+              EDITARE
             </th>
           </tr>
         </thead>
@@ -116,7 +113,7 @@ const EcoTable: React.FC<TableComponentProps> = ({
                     return appointments.length > 0 ? (
                       appointments.map((appointment, index) => (
                         <tr
-                          key={appointment._id}
+                          key={`${timeSlot}-${appointment._id}`}
                           className={`${
                             appointment.isConfirmed
                               ? "bg-red-200"
@@ -129,9 +126,6 @@ const EcoTable: React.FC<TableComponentProps> = ({
                           </td>
                           <td className="border border-gray-200 px-4 py-2 text-gray-700">
                             {appointment.patientName}
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                            {appointment.patientSurname}
                           </td>
                           <td className="border border-gray-200 px-4 py-2 text-gray-700">
                             {appointment.testType}

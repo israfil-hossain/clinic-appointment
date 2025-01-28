@@ -40,8 +40,7 @@ export async function GET(request: NextRequest) {
       if (testType) filter.testType = testType;
       if (doctorName) {
         filter.$or = [
-          { patientName: doctorName },
-          { patientSurname: doctorName },
+          { patientName: doctorName }
         ];
       }
   
@@ -56,7 +55,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   await dbConnect();
-  const { location, date, time, patientName, patientSurname, testType, phoneNumber, isConfirmed, notes,doctorName } = await request.json();
+  const { location, date, time, patientName, testType, phoneNumber, isConfirmed, notes,doctorName } = await request.json();
 
   try {
     // Validate JWT token
@@ -83,7 +82,6 @@ export async function POST(request: NextRequest) {
       date,
       time,
       patientName,
-      patientSurname,
       doctorName,
       testType,
       phoneNumber,
@@ -96,9 +94,9 @@ export async function POST(request: NextRequest) {
       { message: "Appointment Created Successfully!", data: newAppointment },
       { status: 201 }
     );
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({ message: "Server Error" }, { status: 500 });
+  } catch(err) {
+    // console.log(err);
+    return NextResponse.json({ message: err }, { status: 500 });
   }
 }
 

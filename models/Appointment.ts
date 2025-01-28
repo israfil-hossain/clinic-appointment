@@ -6,7 +6,6 @@ const AppointmentSchema: Schema = new Schema({
   date: { type: Date, required: true },
   time: { type: String, required: true },
   patientName: { type: String, required: true },
-  patientSurname: { type: String, required: true },
   testType: { type: String, required: true },
   doctorName: {type:String, requierd: true },
   phoneNumber: { type: String, required: true },
