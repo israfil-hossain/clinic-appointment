@@ -230,6 +230,7 @@ const Dashboard = () => {
         date={selectedDate}
         day = {selectDay}
         location={location}
+        appointments = {data}
         fetchAppointments={fetchAppointments}
         data={editData ? editData : null}
 

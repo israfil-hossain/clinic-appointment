@@ -90,28 +90,25 @@ const TableComponent: React.FC<TableComponentProps> = ({
                   <input type="checkbox" />
                 </th> */}
                 <th className="border border-gray-200 px-4 py-2 text-left font-medium">
-                  Timp prezent
+                  ORA
                 </th>
                 <th className="border border-gray-200 px-4 py-2 text-left font-medium">
-                  Nume
+                  NUME
                 </th>
                 <th className="border border-gray-200 px-4 py-2 text-left font-medium">
-                  Prenume
+                  TELEFON
                 </th>
                 <th className="border border-gray-200 px-4 py-2 text-left font-medium">
-                  Department
+                  DOCTOR
                 </th>
                 <th className="border border-gray-200 px-4 py-2 text-left font-medium">
-                  Telefon
-                </th>
-                <th className="border border-gray-200 px-4 py-2 text-left font-medium">
-                  Doctor
+                  OBSERVATII
                 </th>
                 <th className="border border-gray-200 px-4 py-2 text-left font-medium w-52">
-                  Notes
+                  SECTIE
                 </th>
                 <th className="border border-gray-200 px-4 py-2 text-left font-medium">
-                  Actions
+                  EDITARE
                 </th>
               </tr>
             </thead>
@@ -133,16 +130,13 @@ const TableComponent: React.FC<TableComponentProps> = ({
                     {appointment.patientName}
                   </td>
                   <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                    {appointment.patientSurname}
-                  </td>
-                  <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                    {appointment.testType}
-                  </td>
-                  <td className="border border-gray-200 px-4 py-2 text-gray-700">
                     {appointment.phoneNumber}
                   </td>
                   <td className="border border-gray-200 px-4 py-2 text-gray-700">
                     {appointment.doctorName}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2 text-gray-700">
+                    {appointment.testType}
                   </td>
                   <td className="border border-gray-200 px-4 py-2 text-gray-700 text-[12px] text-wrap overflow-x-auto">
                     {appointment.notes}

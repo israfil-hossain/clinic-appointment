@@ -10,7 +10,6 @@ export interface Appointment {
   date: Date;
   time: string;
   patientName: string;
-  patientSurname: string;
   doctorName: string; 
   testType: string;
   phoneNumber: string;

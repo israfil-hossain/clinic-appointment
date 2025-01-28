@@ -43,13 +43,15 @@ const CalendarGrid = ({
 
   const isFilled = useMemo(() => {
     if (selectedDate) {
-      setIsLoading(true); // Set loading to true before computation
+      setIsLoading(true);
       const filled = checkIfFilled(appointmentData, scheduleData);
-      setIsLoading(false); // Set loading to false after computation
+      setIsLoading(false); 
       return filled;
     }
     return false;
   }, [appointmentData, scheduleData, selectedDate]);
+
+  console.log("IsFilled : ", isFilled); 
 
   return (
     <div className="flex lg:flex-row flex-col p-4 lg:space-x-10 w-full justify-between lg:px-10 px-5">
