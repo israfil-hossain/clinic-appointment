@@ -49,8 +49,8 @@ export async function GET(request: NextRequest) {
       const appointments = await AppointmentModel.find(filter).sort({ date: 1 });
       return NextResponse.json({ success: true, data: appointments }, { status: 200 });
     } catch (err) {
-      console.error(err);
-      return NextResponse.json({ message: "Server Error" }, { status: 500 });
+      console.log(err);
+      return NextResponse.json({ message: "Server Error", err }, { status: 500 });
     }
 }
 

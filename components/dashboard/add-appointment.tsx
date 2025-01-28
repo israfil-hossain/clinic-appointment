@@ -41,7 +41,6 @@ interface Appointment {
 const AppointmentSchema = Yup.object().shape({
   time: Yup.string().required("Time is required"),
   patientName: Yup.string().required("Name is required"),
-  patientSurname: Yup.string().required("Surname is required"),
   testType: Yup.string().required("Type is required"),
   phoneNumber: Yup.string().required("Phone number is required"),
   doctorName: Yup.string().required("Doctor is required"),
@@ -237,28 +236,16 @@ export default function AppointmentAddEdit({
                 <Form className="space-y-4">
                   <div className="flex space-x-5 w-full">
                     <div className="w-1/2">
-                      <Label htmlFor="patientName">Name</Label>
+                      <Label htmlFor="patientName">Nume</Label>
                       <Field name="patientName" as={Input} id="patientName" />
                       {errors.patientName && touched.patientName && (
                         <div className="text-red-500">{errors.patientName}</div>
                       )}
                     </div>
-                    <div className="w-1/2">
-                      <Label htmlFor="patientSurname">Surname</Label>
-                      <Field
-                        name="patientSurname"
-                        as={Input}
-                        id="patientSurname"
-                      />
-                      {errors.patientSurname && touched.patientSurname && (
-                        <div className="text-red-500">
-                          {errors.patientSurname}
-                        </div>
-                      )}
-                    </div>
+                    
                   </div>
                   <div>
-                    <Label htmlFor="phoneNumber">Phone</Label>
+                    <Label htmlFor="phoneNumber">TELEFON</Label>
                     <Field name="phoneNumber" as={Input} id="phoneNumber" />
                     {errors.phoneNumber && touched.phoneNumber && (
                       <div className="text-red-500">{errors.phoneNumber}</div>
@@ -266,7 +253,7 @@ export default function AppointmentAddEdit({
                   </div>
 
                   <div>
-                    <Label htmlFor="testType">Department</Label>
+                    <Label htmlFor="testType">SECTIE</Label>
                     {isEco ? (
                       <Field name="testType" as={Input} id="testType" />
                     ) : (
@@ -283,7 +270,7 @@ export default function AppointmentAddEdit({
                         value={values.testType}
                         className="block w-full p-2 border border-gray-300 rounded"
                       >
-                        <option value="">Select Department</option>
+                        <option value="">Select Sectie</option>
                         {departmentsData.map((dept) => (
                           <option key={dept.name} value={dept.name}>
                             {dept.name}
@@ -365,7 +352,7 @@ export default function AppointmentAddEdit({
                     {isEco ? (
                       <div>
                         <Label htmlFor="time" className="pb-3">
-                          Time
+                          Ora
                         </Label>
                         <div className="flex items-center space-x-3">
                           {/* Time Type Selection */}
@@ -454,7 +441,7 @@ export default function AppointmentAddEdit({
                   </div>
 
                   <div>
-                    <Label htmlFor="notes">Notes</Label>
+                    <Label htmlFor="notes">Observatii</Label>
                     <Field
                       as="textarea"
                       name="notes"
