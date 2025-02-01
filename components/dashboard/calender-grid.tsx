@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { getCalendarDays } from "@/utils/getCalenderDays";
@@ -26,6 +26,7 @@ const CalendarGrid = ({
   appointmentData: any;
 }) => {
   const [currentDate, setCurrentDate] = useState(dayjs());
+  const [isFilled, setIsFilled] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const calendarDays = getCalendarDays(currentDate);
@@ -41,17 +42,15 @@ const CalendarGrid = ({
     setDayName(date.format("dddd"));
   };
 
-  const isFilled = useMemo(() => {
+  // Update the isFilled state when scheduleData or appointmentData changes
+  useEffect(() => {
     if (selectedDate) {
       setIsLoading(true);
       const filled = checkIfFilled(appointmentData, scheduleData);
-      setIsLoading(false); 
-      return filled;
+      setIsFilled(filled);
+      setIsLoading(false);
     }
-    return false;
   }, [appointmentData, scheduleData, selectedDate]);
-
-  console.log("IsFilled : ", isFilled); 
 
   return (
     <div className="flex lg:flex-row flex-col p-4 lg:space-x-10 w-full justify-between lg:px-10 px-5">
@@ -119,7 +118,7 @@ const CalendarGrid = ({
                 </div>
               )
             )}
-            {calendarDays.map((date: any, index: number) => {
+            {calendarDays?.map((date: any, index: number) => {
               const isCurrentMonth = date.month() === currentDate.month();
               const isBeforeToday = date.isBefore(dayjs(), "day");
               const isSelected =
