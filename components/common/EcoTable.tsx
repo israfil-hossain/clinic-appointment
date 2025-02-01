@@ -11,6 +11,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { useState } from "react";
 import isDateValid from "@/utils/isValidDate";
+import { Switch } from "../ui/switch";
 
 interface Appointment {
   _id: string;
@@ -76,16 +77,35 @@ const EcoTable: React.FC<TableComponentProps> = ({
     setAppointmentToDelete(null);
   };
 
+  const handleToggleConfirmed = async (appointmentId: string, isConfirmed: boolean) => {
+    try {
+      await axios.patch(`/api/appointments?id=${appointmentId}`, { isConfirmed });
+  
+      toast.success("Appointment status updated!");
+      fetchData(); // Refresh data after update
+    } catch (error) {
+      console.error("Error updating appointment status:", error);
+      toast.error("Failed to update appointment status.");
+    }
+  };
+  
+
   return (
     <div className="overflow-x-auto lg:px-10 px-5 mb-5">
       <table className="w-full text-sm">
         <thead>
           <tr className="bg-white">
             <th className="border border-gray-200 px-4 py-2 text-left font-medium">
+              EDITARE
+            </th>
+            <th className="border border-gray-200 px-4 py-2 text-left font-medium">
               ORA
             </th>
             <th className="border border-gray-200 px-4 py-2 text-left font-medium">
               NUME
+            </th>
+            <th className="border border-gray-200 px-4 py-2 text-left font-medium">
+              SECTIE
             </th>
             <th className="border border-gray-200 px-4 py-2 text-left font-medium">
               TELEFON
@@ -95,12 +115,6 @@ const EcoTable: React.FC<TableComponentProps> = ({
             </th>
             <th className="border border-gray-200 px-4 py-2 text-left font-medium w-52">
               OBSERVATII
-            </th>
-            <th className="border border-gray-200 px-4 py-2 text-left font-medium">
-              SECTIE
-            </th>
-            <th className="border border-gray-200 px-4 py-2 text-left font-medium">
-              EDITARE
             </th>
           </tr>
         </thead>
@@ -120,25 +134,6 @@ const EcoTable: React.FC<TableComponentProps> = ({
                               : "bg-green-300"
                           } transition-colors`}
                         >
-                          {/* Show timeSlot only for the first appointment in the group */}
-                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                            {index === 0 ? timeSlot : ""}
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                            {appointment.patientName}
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                            {appointment.testType}
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                            {appointment.phoneNumber}
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                            {appointment.doctorName}
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2 text-gray-700 text-[12px] text-wrap overflow-x-auto">
-                            {appointment.notes || "-"}
-                          </td>
                           <td className="border border-gray-200 px-4 py-2 flex space-x-2">
                             <button
                               onClick={() => onEdit(appointment)}
@@ -162,6 +157,34 @@ const EcoTable: React.FC<TableComponentProps> = ({
                             >
                               <Trash size={20} />
                             </button>
+                            <Switch
+                              id="isConfirmed"
+                              checked={appointment.isConfirmed}
+                              onCheckedChange={(checked: boolean) =>
+                                handleToggleConfirmed(appointment._id, checked)
+                              }
+                              disabled={!isDateValid(appointment.date)}
+                              className="w-9"
+                            />
+                          </td>
+                          {/* Show timeSlot only for the first appointment in the group */}
+                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
+                            {index === 0 ? timeSlot : ""}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
+                            {appointment.patientName}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
+                            {appointment.testType}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
+                            {appointment.phoneNumber}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
+                            {appointment.doctorName}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2 text-gray-700 text-[12px] text-wrap overflow-x-auto">
+                            {appointment.notes || "-"}
                           </td>
                         </tr>
                       ))
