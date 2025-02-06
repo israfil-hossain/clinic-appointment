@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Source environment variables
-source /app/.env
+source /.env
 
 # Define the backup directory
-BACKUP_DIR="/app/mongo-backup-data"
+BACKUP_DIR="../mongo-backup-data"
 DATE=$(date +"%Y-%m-%d-%H-%M-%S")
 BACKUP_FILE="$BACKUP_DIR/backup-$DATE.tar.gz"
 
