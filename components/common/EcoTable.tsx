@@ -104,8 +104,8 @@ const EcoTable: React.FC<TableComponentProps> = ({
             <th className="border border-gray-200 px-4 py-2 text-left font-medium">
               NUME
             </th>
-            <th className="border border-gray-200 px-4 py-2 text-left font-medium">
-              SECTIE
+            <th className="border border-gray-200 px-4 py-2 text-left font-medium w-52">
+              OBSERVATII
             </th>
             <th className="border border-gray-200 px-4 py-2 text-left font-medium">
               TELEFON
@@ -113,9 +113,10 @@ const EcoTable: React.FC<TableComponentProps> = ({
             <th className="border border-gray-200 px-4 py-2 text-left font-medium">
               DOCTOR
             </th>
-            <th className="border border-gray-200 px-4 py-2 text-left font-medium w-52">
-              OBSERVATII
+            <th className="border border-gray-200 px-4 py-2 text-left font-medium">
+              SECTIE
             </th>
+            
           </tr>
         </thead>
         <tbody>
@@ -157,7 +158,9 @@ const EcoTable: React.FC<TableComponentProps> = ({
                             >
                               <Trash size={20} />
                             </button>
-                            <Switch
+                            {
+                              appointment?.isConfirmed && 
+                              <Switch
                               id="isConfirmed"
                               checked={appointment.isConfirmed}
                               onCheckedChange={(checked: boolean) =>
@@ -166,6 +169,7 @@ const EcoTable: React.FC<TableComponentProps> = ({
                               disabled={!isDateValid(appointment.date)}
                               className="w-9"
                             />
+                            }
                           </td>
                           {/* Show timeSlot only for the first appointment in the group */}
                           <td className="border border-gray-200 px-4 py-2 text-gray-700">
@@ -174,8 +178,8 @@ const EcoTable: React.FC<TableComponentProps> = ({
                           <td className="border border-gray-200 px-4 py-2 text-gray-700">
                             {appointment.patientName}
                           </td>
-                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                            {appointment.testType}
+                          <td className="border border-gray-200 px-4 py-2 text-gray-700 text-[12px] text-wrap overflow-x-auto">
+                            {appointment.notes || "-"}
                           </td>
                           <td className="border border-gray-200 px-4 py-2 text-gray-700">
                             {appointment.phoneNumber}
@@ -183,9 +187,10 @@ const EcoTable: React.FC<TableComponentProps> = ({
                           <td className="border border-gray-200 px-4 py-2 text-gray-700">
                             {appointment.doctorName}
                           </td>
-                          <td className="border border-gray-200 px-4 py-2 text-gray-700 text-[12px] text-wrap overflow-x-auto">
-                            {appointment.notes || "-"}
+                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
+                            {appointment.testType}
                           </td>
+                          
                         </tr>
                       ))
                     ) : (
