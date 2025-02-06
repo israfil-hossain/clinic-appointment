@@ -4,7 +4,7 @@ const createUser = require('./User');
 (async () => {
     console.log("Starting the database seeding process...");
     try {
-        // await seedTimeSlots();
+        await seedTimeSlots();
         await createUser(); 
         console.log("Database seeding completed successfully.");
     } catch (error) {

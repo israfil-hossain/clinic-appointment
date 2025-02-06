@@ -12,7 +12,7 @@ async function seedTimeSlots() {
     console.log("Clearing existing time slots...");
 
     // Clear existing time slots
-    await TimeSlot.deleteMany({});
+    // await TimeSlot.deleteMany({});
 
     console.log("Seeding new data ..... ")
     // Insert seed data
