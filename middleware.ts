@@ -22,7 +22,6 @@ export const config = {
     "/",
     "/doctors/:path*",
     "/dashboard",
-    "/verifyMe/:path*",
   ],
 };
 
