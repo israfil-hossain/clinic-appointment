@@ -11,6 +11,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { useState } from "react";
 import isDateValid from "@/utils/isValidDate";
+import { Switch } from "../ui/switch";
 
 interface Appointment {
   _id: string;
@@ -76,35 +77,46 @@ const EcoTable: React.FC<TableComponentProps> = ({
     setAppointmentToDelete(null);
   };
 
+  const handleToggleConfirmed = async (appointmentId: string, isConfirmed: boolean) => {
+    try {
+      await axios.patch(`/api/appointments?id=${appointmentId}`, { isConfirmed });
+  
+      toast.success("Appointment status updated!");
+      fetchData(); // Refresh data after update
+    } catch (error) {
+      console.error("Error updating appointment status:", error);
+      toast.error("Failed to update appointment status.");
+    }
+  };
+  
+
   return (
     <div className="overflow-x-auto lg:px-10 px-5 mb-5">
       <table className="w-full text-sm">
         <thead>
           <tr className="bg-white">
             <th className="border border-gray-200 px-4 py-2 text-left font-medium">
-              Time
+              EDITARE
             </th>
             <th className="border border-gray-200 px-4 py-2 text-left font-medium">
-              Name
+              ORA
             </th>
             <th className="border border-gray-200 px-4 py-2 text-left font-medium">
-              Surnamed
-            </th>
-            <th className="border border-gray-200 px-4 py-2 text-left font-medium">
-              Phone
-            </th>
-            <th className="border border-gray-200 px-4 py-2 text-left font-medium">
-              Doctor
+              NUME
             </th>
             <th className="border border-gray-200 px-4 py-2 text-left font-medium w-52">
-              Notes
+              OBSERVATII
             </th>
             <th className="border border-gray-200 px-4 py-2 text-left font-medium">
-              Department
+              TELEFON
             </th>
             <th className="border border-gray-200 px-4 py-2 text-left font-medium">
-              Actions
+              DOCTOR
             </th>
+            <th className="border border-gray-200 px-4 py-2 text-left font-medium">
+              SECTIE
+            </th>
+            
           </tr>
         </thead>
         <tbody>
@@ -116,35 +128,13 @@ const EcoTable: React.FC<TableComponentProps> = ({
                     return appointments.length > 0 ? (
                       appointments.map((appointment, index) => (
                         <tr
-                          key={appointment._id}
+                          key={`${timeSlot}-${appointment._id}`}
                           className={`${
                             appointment.isConfirmed
                               ? "bg-red-200"
                               : "bg-green-300"
                           } transition-colors`}
                         >
-                          {/* Show timeSlot only for the first appointment in the group */}
-                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                            {index === 0 ? timeSlot : ""}
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                            {appointment.patientName}
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                            {appointment.patientSurname}
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                            {appointment.testType}
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                            {appointment.phoneNumber}
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
-                            {appointment.doctorName}
-                          </td>
-                          <td className="border border-gray-200 px-4 py-2 text-gray-700 text-[12px] text-wrap overflow-x-auto">
-                            {appointment.notes || "-"}
-                          </td>
                           <td className="border border-gray-200 px-4 py-2 flex space-x-2">
                             <button
                               onClick={() => onEdit(appointment)}
@@ -168,7 +158,39 @@ const EcoTable: React.FC<TableComponentProps> = ({
                             >
                               <Trash size={20} />
                             </button>
+                            {
+                              appointment?.isConfirmed && 
+                              <Switch
+                              id="isConfirmed"
+                              checked={appointment.isConfirmed}
+                              onCheckedChange={(checked: boolean) =>
+                                handleToggleConfirmed(appointment._id, checked)
+                              }
+                              disabled={!isDateValid(appointment.date)}
+                              className="w-9"
+                            />
+                            }
                           </td>
+                          {/* Show timeSlot only for the first appointment in the group */}
+                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
+                            {index === 0 ? timeSlot : ""}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
+                            {appointment.patientName}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2 text-gray-700 text-[12px] text-wrap overflow-x-auto">
+                            {appointment.notes || "-"}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
+                            {appointment.phoneNumber}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
+                            {appointment.doctorName}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-2 text-gray-700">
+                            {appointment.testType}
+                          </td>
+                          
                         </tr>
                       ))
                     ) : (

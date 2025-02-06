@@ -29,7 +29,6 @@ interface Appointment {
   date: any;
   time: string;
   patientName: string;
-  patientSurname: string;
   doctorName: string;
   testType: string;
   phoneNumber: string;
@@ -55,6 +54,7 @@ interface AppointmentAddEditProps {
   day?: string;
   data?: Appointment | null;
   fetchAppointments: () => void;
+  appointments?: any;
 }
 
 export default function AppointmentAddEdit({
@@ -66,9 +66,14 @@ export default function AppointmentAddEdit({
   location,
   data,
   fetchAppointments,
+  appointments,
 }: AppointmentAddEditProps) {
-  const [newTime, setNewTime] = useState("");
-
+  const [customTime, setCustomTime] = useState("");
+  const [selectTime, setSelectTime] = useState({
+    time: "",
+    date: "",
+  });
+  const [showTimeSelector, setShowTimeSelector] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const { timeSlots, setTimeSlots } = useTimeSlotStore();
 
@@ -80,10 +85,8 @@ export default function AppointmentAddEdit({
     { resetForm }: { resetForm: any }
   ) => {
     try {
-      const isDefault =
-      timeSlots.some(
-        (slot: any) =>
-          slot.time === values.time && slot.date === "00:00:00"
+      const isDefault = timeSlots.some(
+        (slot: any) => slot.time === values.time && slot.date === "00:00:00"
       );
 
       const appointmentData = {
@@ -97,7 +100,7 @@ export default function AppointmentAddEdit({
       } else {
         await createAppointment(appointmentData, formattedDate);
       }
-      
+
       resetForm();
       handleModal();
       fetchAppointments();
@@ -171,15 +174,15 @@ export default function AppointmentAddEdit({
     }
   };
 
-  // Add new time slots according to Location , Day and Date Wise ..... 
+  // Add new time slots according to Location , Day and Date Wise .....
   const handleAddTime = async () => {
-    try{
+    try {
       const response = await axios.post(
         "/api/schedule",
         {
           location,
           day,
-          timeSlot: { time: newTime , date: formattedDate}
+          timeSlot: { time: customTime, date: formattedDate },
         },
         {
           headers: {
@@ -187,13 +190,13 @@ export default function AppointmentAddEdit({
           },
         }
       );
-      if(response.status === 201){
-        toast.success("New Time Add Successfully !")
+      if (response.status === 201) {
+        toast.success("New Time Added Successfully!");
         fetchTimeSlots();
+        setShowTimeSelector(false);
       }
-    }
-    catch(err){
-      console.error(err)
+    } catch (err) {
+      console.error(err);
       toast.error("Failed to add new time");
     }
   };
@@ -208,11 +211,11 @@ export default function AppointmentAddEdit({
     <div className="w-full overflow-auto">
       <div className="mb-4">
         <Dialog open={isModalOpen} onOpenChange={handleModal}>
-          <DialogContent className=" min-w-[400px] max-w-[600px]  max-h-[80vh] overflow-y-auto">
+          <DialogContent className="min-w-[400px] max-w-[600px] max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {data ? "Update" : "Add"} New Appointment For{" "}
-                {date?.format("D MMMM YYYY")}
+                {date?.format("D MMMM YYYY")} - {day}
               </DialogTitle>
             </DialogHeader>
             <Formik
@@ -221,7 +224,6 @@ export default function AppointmentAddEdit({
                 date: data?.date || formattedDate,
                 time: data?.time || "",
                 patientName: data?.patientName || "",
-                patientSurname: data?.patientSurname || "",
                 testType: isEco ? "Ecografie" : data?.testType || "",
                 phoneNumber: data?.phoneNumber || "",
                 notes: data?.notes || "",
@@ -242,14 +244,13 @@ export default function AppointmentAddEdit({
                         <div className="text-red-500">{errors.patientName}</div>
                       )}
                     </div>
-                    
-                  </div>
-                  <div>
-                    <Label htmlFor="phoneNumber">TELEFON</Label>
-                    <Field name="phoneNumber" as={Input} id="phoneNumber" />
-                    {errors.phoneNumber && touched.phoneNumber && (
-                      <div className="text-red-500">{errors.phoneNumber}</div>
-                    )}
+                    <div className="w-1/2">
+                      <Label htmlFor="phoneNumber">Phone</Label>
+                      <Field name="phoneNumber" as={Input} id="phoneNumber" />
+                      {errors.phoneNumber && touched.phoneNumber && (
+                        <div className="text-red-500">{errors.phoneNumber}</div>
+                      )}
+                    </div>
                   </div>
 
                   <div>
@@ -347,97 +348,128 @@ export default function AppointmentAddEdit({
                       ))}
                     </div>
                   </div>
-                 
-                  <div className="w-full flex space-x-10">
-                    {isEco ? (
-                      <div>
-                        <Label htmlFor="time" className="pb-3">
-                          Ora
-                        </Label>
-                        <div className="flex items-center space-x-3">
-                          {/* Time Type Selection */}
-                          <label className="flex items-center">
-                            <Field
-                              type="radio"
-                              name="timeType"
-                              value="select"
-                              onChange={() => {
-                                setFieldValue("timeType", "select");
-                                setFieldValue("time", ""); // Reset time value
-                              }}
-                              checked={values.timeType === "select"}
-                            />
-                            <span className="ml-2">Select Time</span>
-                          </label>
-                          <label className="flex items-center">
-                            <Field
-                              type="radio"
-                              name="timeType"
-                              value="custom"
-                              onChange={() => {
-                                setFieldValue("timeType", "custom");
-                                setFieldValue("time", ""); // Reset time value
-                              }}
-                              checked={values.timeType === "custom"}
-                            />
-                            <span className="ml-2">Add New Custom Time For Today</span>
-                          </label>
-                        </div>
 
-                        {/* Time Input */}
-                        {values.timeType === "select" ? (
+                  <div className="w-full flex space-x-10">
+                    <div>
+                      <Label htmlFor="time" className="pb-3">
+                        Time
+                      </Label>
+                      <div className="flex items-center space-x-3">
+                        {/* Time Type Selection */}
+                        <label className="flex items-center">
                           <Field
-                            as="select"
-                            name="time"
-                            id="time"
-                            className="border py-2 rounded-lg mt-2 w-full"
-                          >
-                            <option value="">Select a time</option>
-                            {timeSlots.map((slot: any) => (
-                              <option key={slot?._id} value={slot?.time}>
-                                {slot?.time}
-                              </option>
-                            ))}
-                          </Field>
-                        ) : (
-                          <>
-                            <span className="text-[12px] text-red-400 ">This temporaly new time schedule apply for only date : {formattedDate} </span>
-                            <div className="flex space-x-2 items-center justify-center">
-                              <Field
-                                name="time"
-                                type="time"
-                                as={Input}
-                                id="time2"
-                                className="mt-2 w-full flex px-5"
-                                onChange={(
-                                  e: React.ChangeEvent<HTMLInputElement>
-                                ) => {
-                                  setNewTime(e.target.value)
-                                  setFieldValue("time", e.target.value)
+                            type="checkbox"
+                            name="timeType"
+                            value="select"
+                            className="w-4 h-4"
+                            onChange={() => {
+                              setShowTimeSelector(false);
+                            }}
+                            checked={showTimeSelector === false}
+                          />
+                          <span className="ml-2">Select Time</span>
+                        </label>
+
+                        {/* Add New Custom Type  */}
+                        <label className="flex items-center">
+                          <Field
+                            type="checkbox"
+                            name="timeType"
+                            value="custom"
+                            className="w-4 h-4"
+                            onChange={() => {
+                              setShowTimeSelector(true);
+                            }}
+                            checked={showTimeSelector === true}
+                          />
+                          <span className="ml-2">
+                            Add New Custom Time Schedule
+                          </span>
+                        </label>
+                      </div>
+
+                      {/* Time Input */}
+                      {showTimeSelector ? (
+                        <div className="mt-5">
+                          <span className="text-[12px] text-gray-500 ">
+                            <span className="font-semibold text-red-500">
+                              ***
+                            </span>
+                            This is temporary time schedule. <br /> This is
+                            applicalable for :{" "}
+                            <span className="font-bold text-[14px]">
+                              {formattedDate}
+                            </span>{" "}
+                            date
+                            <span className="font-semibold text-red-500">
+                              {" "}
+                              ***
+                            </span>
+                          </span>
+                          <div className="flex space-x-2 items-center justify-center mt-2">
+                            <input
+                              name="time"
+                              type="time"
+                              id="time"
+                              className="mt-2 w-full flex px-5 py-2 border rounded-lg "
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) => {
+                                setCustomTime(e.target.value);
+                              }}
+                              value={customTime || ""}
+                            />
+                            <button
+                              className={`bg-gray-800 hover:bg-gray-700 items-center rounded-lg px-3 py-2 mt-2 text-white text-sm ${
+                                !customTime
+                                  ? "opacity-50 cursor-not-allowed"
+                                  : ""
+                              }`} // Disable if no time is entered
+                              onClick={handleAddTime}
+                              disabled={!customTime} // Disable the Save button if no custom time is input
+                            >
+                              Save
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="grid lg:grid-cols-8 md:grid-cols-6  grid-cols-4 gap-2 mt-5">
+                          {timeSlots.map((slot: any) => {
+                            // Check if the timeslot is booked in the appointment data
+                            const isBooked = appointments.some(
+                              (appointment:any) => appointment.time === slot.time
+                            );
+
+                            return (
+                              <button
+                                key={slot.time}
+                                type="button"
+                                className={`px-3 py-2 rounded-lg transition-colors duration-200 cursor-pointer hover:bg-blue-200 hover:text-black ${
+                                  selectTime?.time === slot.time
+                                    ? "bg-blue-500 text-white"
+                                    : isBooked
+                                    ? "bg-red-200 text-gray-400 cursor-not-allowed"
+                                    : "bg-gray-200"
+                                }`}
+                                onClick={() => {
+                                  if (!isBooked) {
+                                    setSelectTime(slot);
+                                    setFieldValue("time", slot.time);
+                                  }
                                 }}
-                              />
-                              <div
-                                className="cursor-pointer bg-gray-800  hover:bg-gray-700 items-center rounded-lg px-3 py-2 mt-2 text-white text-sm"
-                                onClick={handleAddTime}
+                                disabled={isBooked} // Disable button if the slot is booked
                               >
-                                Save
-                              </div>
-                            </div>
-                          </>
-                        )}
-                        {errors.time && touched.time && (
-                          <div className="text-red-500">{errors.time}</div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="w-32">
-                        <Label htmlFor="time">Time</Label>
-                        <Field name="time" type="time" as={Input} id="time" />
-                        {errors.time && touched.time && (
-                          <div className="text-red-500">{errors.time}</div>
-                        )}
-                      </div>
-                    )}
+                                {slot?.time}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {errors.time && touched.time && (
+                        <div className="text-red-500">{errors.time}</div>
+                      )}
+                    </div>
                   </div>
 
                   <div>
@@ -455,9 +487,11 @@ export default function AppointmentAddEdit({
                       htmlFor="isConfirmed"
                       className="text-[20px] font-bold text-blue-500"
                     >
-                      {values?.isConfirmed
-                        ? "Close Reservation"
-                        : "Active Reservation"}{" "}
+                      {values?.isConfirmed ? (
+                        <span className="text-red-500">Close Reservation</span>
+                      ) : (
+                        "Active Reservation"
+                      )}{" "}
                     </Label>
                     <Field name="isConfirmed">
                       {({ field, form }: { field: any; form: any }) => (
@@ -467,6 +501,8 @@ export default function AppointmentAddEdit({
                           onCheckedChange={(checked: boolean) =>
                             form.setFieldValue("isConfirmed", checked)
                           }
+                          color="red"
+                          className="text-red-500"
                         />
                       )}
                     </Field>
