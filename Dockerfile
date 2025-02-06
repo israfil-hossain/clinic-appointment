@@ -17,14 +17,11 @@ RUN yarn build
 # Remove development dependencies to reduce image size
 RUN yarn install --production --frozen-lockfile
 
-# Stage 2: Serve the Next.js app and run Cron Jobs
+# Stage 2: Serve the Next.js app
 FROM node:18-alpine
 
 # Set working directory
 WORKDIR /app
-
-# Install cron and other required utilities
-RUN apk add --no-cache bash curl cron mongodb-tools
 
 # Copy the production build and node_modules from the builder stage
 COPY --from=builder /app/.next ./.next
@@ -32,18 +29,17 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
 
-# Copy the cron job script and give it execution permissions
-COPY backup.sh /backup.sh
-RUN chmod +x /backup.sh
-
 # Set environment variable for production
 ENV NODE_ENV=production
 
-# Copy the crontab configuration
+# Copy crontab file into the container (make sure crontab file is in the project root)
 COPY crontab /etc/crontabs/root
+
+# Make backup.sh script executable
+RUN chmod +x /app/backup.sh
 
 # Expose port 3000
 EXPOSE 3000
 
-# Start Cron and the Next.js application
-CMD crond && yarn start
+# Start the Next.js application
+CMD ["yarn", "start"]
