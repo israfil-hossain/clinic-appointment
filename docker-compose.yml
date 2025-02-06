@@ -18,7 +18,8 @@ services:
 
   mongo:
     image: mongo:latest
-    container_name: mongodb
+    # Remove or comment out the container_name field
+    # container_name: mongodb
     ports:
       - "27018:27018"
     environment:
