@@ -32,14 +32,18 @@ COPY --from=builder /app/package.json ./package.json
 # Set environment variable for production
 ENV NODE_ENV=production
 
-# Copy crontab file into the container (make sure crontab file is in the project root)
-COPY crontab /etc/crontabs/root
+# Install necessary packages (cron and mongodb-tools)
+RUN apk add --no-cache cron mongodb-tools bash
 
-# Make backup.sh script executable
+# Copy the backup script to the container and make it executable
+COPY backup.sh /app/backup.sh
 RUN chmod +x /app/backup.sh
+
+# Copy the crontab file into the container
+COPY cron /etc/crontabs/root
 
 # Expose port 3000
 EXPOSE 3000
 
-# Start the Next.js application
-CMD ["yarn", "start"]
+# Start cron in the background and the Next.js app
+CMD crond && yarn start

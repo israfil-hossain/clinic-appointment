@@ -1,16 +1,22 @@
-#!/bin/sh
-# backup.sh
-# This script will back up the MongoDB database to a file
+#!/bin/bash
 
-# Define backup file location
-BACKUP_DIR="/backups"
-BACKUP_FILE="${BACKUP_DIR}/backup_$(date +\%Y-\%m-\%d_\%H-\%M).gz"
+# Define the backup directory
+BACKUP_DIR="/app/mongo-backup-data"
+DATE=$(date +"%Y-%m-%d-%H-%M-%S")
+BACKUP_FILE="$BACKUP_DIR/backup-$DATE.tar.gz"
 
-# Create backup directory if it doesn't exist
+# MongoDB credentials and URI
+MONGO_URI="mongodb://moscrm:AlaBala%3B@81.196.46.41:27018/clinicdb?authSource=admin"
+
+# Create the backup directory if it doesn't exist
 mkdir -p $BACKUP_DIR
 
-# Run the backup using `mongodump`
-mongodump --uri=$MONGO_URI --archive=$BACKUP_FILE --gzip
+# Run the MongoDB backup using mongodump
+mongodump --uri="$MONGO_URI" --archive="$BACKUP_FILE" --gzip
 
-# Print a success message
-echo "MongoDB backup completed at $BACKUP_FILE"
+# Check if the backup was successful and log the result
+if [ $? -eq 0 ]; then
+  echo "Backup successful: $BACKUP_FILE"
+else
+  echo "Backup failed"
+fi
