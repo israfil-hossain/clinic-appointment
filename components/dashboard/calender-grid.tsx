@@ -85,7 +85,7 @@ const CalendarGrid = ({
         <div className="mt-[85px] space-y-[10px] min-w-16">
           {["Săpt 1", "Săpt 2", "Săpt 3", "Săpt 4", "Săpt 5"].map(
             (day, index) => (
-              <div key={index} className="font-bold lg:text-[15px] text-[12px]">
+              <div key={index+day} className="font-bold lg:text-[15px] text-[12px]">
                 {day}
               </div>
             )
