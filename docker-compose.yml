@@ -1,20 +1,15 @@
 version: '3.8'
-
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     ports:
       - "3000:3000"
-    environment:
-      MONGO_URI: mongodb://moscrm:${MONGO_PASSWORD}@mongo:27018/clinicdb?authSource=admin
-      NODE_ENV: production
-    restart: unless-stopped
-    depends_on:
-      - mongo
+    volumes:
+      - ./mongo-backup-data:/app/mongo-backup-data
     networks:
       - app-network
+    restart: unless-stopped
+    container_name: clinic-appointment
 
   mongo:
     image: mongo:latest
@@ -23,7 +18,7 @@ services:
       - "27018:27018"
     environment:
       MONGO_INITDB_ROOT_USERNAME: moscrm
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_INITDB_ROOT_PASSWORD: AlaBala%3B
     volumes:
       - mongodb_data:/data/db
     networks:
@@ -31,6 +26,3 @@ services:
 
 volumes:
   mongodb_data:
-
-networks:
-  app-network:
