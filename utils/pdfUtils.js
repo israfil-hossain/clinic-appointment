@@ -35,7 +35,7 @@ export const generatePDF = ({
   // Add title
   doc.setFontSize(14);
   doc.setTextColor(40, 40, 100);
-  doc.text(`Appointments List for ${location} - ${day}, ${date}`, 12, 50);
+  doc.text(`Appointments List for ${location} - ${day}, ${date}`, 12, 33);
 
   // Sort data by time in ascending order
   const sortedData = data.sort((a, b) => {
@@ -68,14 +68,14 @@ export const generatePDF = ({
   doc.autoTable({
     head: [tableColumns],
     body: tableRows,
-    startY: 60,
+    startY: 40,
   });
 
   // Get the final Y position after the table
-  const finalY = doc.lastAutoTable?.finalY || 60;
+  const finalY = doc.lastAutoTable?.finalY || 20;
 
   // Add notes section
-  const pageMargin = 12;
+  const pageMargin = 10;
   const maxWidth = pageWidth - pageMargin * 2;
 
   doc.setFont("Roboto", "normal");

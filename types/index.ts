@@ -7,6 +7,7 @@ export interface Location {
 
 export interface Appointment {
   location: string;
+  day: string;
   date: Date;
   time: string;
   patientName: string;

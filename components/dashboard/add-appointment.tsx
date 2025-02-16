@@ -121,6 +121,7 @@ export default function AppointmentAddEdit({
         "/api/appointments",
         {
           ...values,
+          day: day,
           date: formattedDate,
         },
         {

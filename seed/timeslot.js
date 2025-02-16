@@ -8,13 +8,10 @@ const TimeSlot = require("./schema/LocationSchedule");
 async function seedTimeSlots() {
   await dbConnect();
   try {
-    // Clear existing time slots
-    console.log("Clearing existing time slots...");
 
     // Clear existing time slots
     // await TimeSlot.deleteMany({});
 
-    console.log("Seeding new data ..... ")
     // Insert seed data
     await TimeSlot.insertMany(timeSlotSeedData);
 
