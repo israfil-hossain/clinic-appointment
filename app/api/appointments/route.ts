@@ -2,7 +2,9 @@ import dbConnect from "@/utils/mongodb";
 import { NextRequest, NextResponse } from "next/server";
 import AppointmentModel from "@/models/Appointment";
 import { verifyJWT } from "@/utils/jwtUtils";
-
+import countDefaultTimeSlots from "../utils/getDefaultTimeSlotCount";
+import countAppointments from "../utils/countAppointments";
+import ColorsModel from "@/models/Colors";
 
 export async function GET(request: NextRequest) {
     await dbConnect();
@@ -55,7 +57,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   await dbConnect();
-  const { location, date, time, patientName, testType, phoneNumber, isConfirmed, notes,doctorName } = await request.json();
+  const { location, day, date, time, patientName, testType, phoneNumber, isConfirmed, notes, doctorName } =
+    await request.json();
 
   try {
     // Validate JWT token
@@ -76,6 +79,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get the count of default time slots
+    const defaultSlotCount = await countDefaultTimeSlots(location, day);
+
     // Create new appointment
     const newAppointment = new AppointmentModel({
       location,
@@ -89,14 +95,35 @@ export async function POST(request: NextRequest) {
       notes,
     });
 
+    // Save the appointment to the database
     await newAppointment.save();
+
+    // Get the count of appointments for the given location and date
+    const appointmentCount = await countAppointments(location, date);
+    
+    // Determine the color based on the comparison
+    const color = appointmentCount >= defaultSlotCount ? "red" : "blue";
+
+    // Update or create the color data in the Colors model
+    await ColorsModel.findOneAndUpdate(
+      { location, date: new Date(date) }, // Filter by location and date
+      { color }, // Update the color
+      { upsert: true, new: true } // Create if not exists, return updated document
+    );
+
     return NextResponse.json(
-      { message: "Appointment Created Successfully!", data: newAppointment },
+      {
+        message: "Appointment Created Successfully!",
+        data: newAppointment,
+        defaultSlotCount,
+        appointmentCount,
+        color,
+      },
       { status: 201 }
     );
-  } catch(err) {
-    // console.log(err);
-    return NextResponse.json({ message: err }, { status: 500 });
+  } catch (err) {
+    console.error("Error creating appointment:", err);
+    return NextResponse.json({ message: "Server Error" }, { status: 500 });
   }
 }
 

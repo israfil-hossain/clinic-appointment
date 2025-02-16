@@ -4,6 +4,7 @@ import { Appointment } from '../types';
 const AppointmentSchema: Schema = new Schema({
   location: { type: String, required: true },
   date: { type: Date, required: true },
+  day:{ type: String, required : true} ,
   time: { type: String, required: true },
   patientName: { type: String, required: true },
   testType: { type: String, required: true },

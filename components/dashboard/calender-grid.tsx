@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { getCalendarDays } from "@/utils/getCalenderDays";
-import { checkIfFilled } from "@/utils/checkFilled";
+import axios from "axios";
 
 dayjs.extend(isSameOrBefore);
 
@@ -13,8 +13,6 @@ const CalendarGrid = ({
   setLocation,
   dayName,
   setDayName,
-  scheduleData,
-  appointmentData,
 }: {
   selectedDate: any;
   setSelectedDate: any;
@@ -22,16 +20,17 @@ const CalendarGrid = ({
   setLocation: any;
   dayName: string;
   setDayName: any;
-  scheduleData: any;
-  appointmentData: any;
 }) => {
   const [currentDate, setCurrentDate] = useState(dayjs());
-  const [isFilled, setIsFilled] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [colorMap, setColorMap] = useState<{ [key: string]: string }>({});
+
+  const startDate = currentDate.startOf("month").format("YYYY-MM-DD");
+  const endDate = currentDate.endOf("month").format("YYYY-MM-DD");
 
   const calendarDays = getCalendarDays(currentDate);
 
-  const handleMonthChange = (direction: any) => {
+  const handleMonthChange = (direction: number) => {
     setCurrentDate((prev) => prev.add(direction, "month"));
   };
 
@@ -41,20 +40,43 @@ const CalendarGrid = ({
     setSelectedDate(date);
     setDayName(date.format("dddd"));
   };
-
-  // Update the isFilled state when scheduleData or appointmentData changes
   useEffect(() => {
-    if (selectedDate) {
+    const fetchColors = async () => {
       setIsLoading(true);
-      const filled = checkIfFilled(appointmentData, scheduleData);
-      setIsFilled(filled);
-      setIsLoading(false);
-    }
-  }, [appointmentData, scheduleData, selectedDate]);
+      try {
+        const response = await axios.get("/api/colors", {
+          params: { startDate, endDate, location },
+          withCredentials: true,
+        });
+
+        const data = Array.isArray(response.data?.data)
+          ? response.data.data
+          : [];
+
+        // Convert API response to a date-color map
+        const colors = data.reduce((acc: any, item: any) => {
+          const formattedDate = dayjs(item.date).format("YYYY-MM-DD"); // Ensure correct format
+          acc[formattedDate] = item.color; // Store color with proper date key
+          return acc;
+        }, {});
+
+        setColorMap(colors);
+      } catch (error: any) {
+        console.error(
+          "Error fetching colors:",
+          error?.response?.data || error.message
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchColors();
+  }, [startDate, endDate, location]);
 
   return (
-    <div className="flex lg:flex-row flex-col p-4 lg:space-x-10 w-full justify-between lg:px-10 px-5">
-      <div className="flex lg:flex-col space-y-4 lg:space-x-0 space-x-5 justify-start items-center">
+    <div className="flex flex-col lg:flex-row p-4 lg:space-x-10 w-full justify-between lg:px-10 px-5">
+      <div className="flex flex-col space-y-4 lg:space-x-0 space-x-5 justify-start items-center">
         <div className="border rounded-md px-4 py-2 w-32">
           <label className="cursor-pointer flex">
             <input
@@ -84,9 +106,12 @@ const CalendarGrid = ({
       <div className="flex w-full mt-5 lg:mt-0">
         <div className="mt-[85px] space-y-[10px] min-w-16">
           {["Săpt 1", "Săpt 2", "Săpt 3", "Săpt 4", "Săpt 5"].map(
-            (day, index) => (
-              <div key={index+day} className="font-bold lg:text-[15px] text-[12px]">
-                {day}
+            (week, index) => (
+              <div
+                key={index + week}
+                className="font-bold lg:text-[15px] text-[12px]"
+              >
+                {week}
               </div>
             )
           )}
@@ -118,57 +143,38 @@ const CalendarGrid = ({
                 </div>
               )
             )}
-            {calendarDays?.map((date: any, index: number) => {
-              const isCurrentMonth = date.month() === currentDate.month();
+
+            {calendarDays.map((date: any, index: number) => {
+              const formattedDate = date.format("YYYY-MM-DD"); // Ensure date format matches API
               const isBeforeToday = date.isBefore(dayjs(), "day");
               const isSelected =
                 selectedDate && date.isSame(selectedDate, "day");
-              let color = "";
-              if (isBeforeToday) {
-                // Gray color for past days
-                color = "bg-gray-300 text-gray-500";
-              } else if (!isBeforeToday && isCurrentMonth) {
-                // Handle current month days
-                if (isSelected) {
-                  // If selected but not filled, green background
-                  color = "bg-green-500 text-white";
-                } else {
-                  // Default color for available slots
-                  color =
-                    "bg-blue-500 text-white hover:bg-green-500 hover:text-white";
+
+              // Default: Past dates are gray
+              let bgColor = "bg-gray-300 text-gray-500";
+
+              if (!isBeforeToday) {
+                bgColor = "bg-blue-500 text-white"; // Future dates default to blue
+
+                // Check if API has a color for this date
+                if (colorMap[formattedDate]) {
+                  bgColor = `bg-${colorMap[formattedDate]}-500 text-white`; // Use API color if exists
                 }
-              } else {
-                // Gray color for non-current month days
-                color =
-                  "bg-gray-100 text-gray-400 hover:bg-green-500 hover:text-white";
+              }
+
+              // If selected, override with green
+              if (isSelected) {
+                bgColor = "bg-green-500 text-white";
               }
 
               return (
-                <>
-                  {isLoading ? (
-                    "Loading ... "
-                  ) : (
-                    <>
-                      {isFilled && isSelected ? (
-                        <div
-                          key={index}
-                          onClick={() => handleDateSelect(date)}
-                          className={`border rounded cursor-pointer bg-red-500 text-white `}
-                        >
-                          {formatDate(date)}
-                        </div>
-                      ) : (
-                        <div
-                          key={index}
-                          onClick={() => handleDateSelect(date)}
-                          className={`border rounded cursor-pointer ${color}`}
-                        >
-                          {formatDate(date)}
-                        </div>
-                      )}
-                    </>
-                  )}
-                </>
+                <div
+                  key={index}
+                  onClick={() => handleDateSelect(date)}
+                  className={`border rounded cursor-pointer ${bgColor} hover:bg-green-500 hover:text-white`}
+                >
+                  {formatDate(date)}
+                </div>
               );
             })}
           </div>
