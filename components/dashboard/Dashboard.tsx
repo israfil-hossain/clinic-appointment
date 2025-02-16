@@ -160,8 +160,6 @@ const Dashboard = () => {
           setLocation={setLocation}
           dayName={dayName}
           setDayName={setDayName}
-          appointmentData={data}
-          scheduleData={timeSlots}
         />
         <div className="w-full text-center text-[18px] font-semibold py-2 border-t pt-5">
           {location} - {selectDay},{" "}
