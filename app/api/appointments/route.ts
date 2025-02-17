@@ -85,6 +85,7 @@ export async function POST(request: NextRequest) {
     // Create new appointment
     const newAppointment = new AppointmentModel({
       location,
+      day,
       date,
       time,
       patientName,
